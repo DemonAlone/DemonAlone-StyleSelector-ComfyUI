@@ -1,7 +1,7 @@
 [project]
 name = "demonalone-styleselector-comfyui"
 description = "Prompt Style Selector with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-version = "1.0.1"
+version = "1.0.2"
 license = {file = "LICENSE"} 
 # classifiers = [
 #     "Environment :: GPU :: NVIDIA CUDA",    # NVIDIA CUDA support
@@ -9,12 +9,12 @@ license = {file = "LICENSE"}
 
 
 [project.urls]
-Repository = "https://github.com/DemonAlone/DemoAlone-StyleSelector-ComfyUI"
+Repository = "https://github.com/DemonAlone/DemonAlone-StyleSelector-ComfyUI"
 #  Used by Comfy Registry https://registry.comfy.org
-"Bug Tracker" = "https://github.com/DemonAlone/DemoAlone-StyleSelector-ComfyUI/issues"
+"Bug Tracker" = "https://github.com/DemonAlone/DemonAlone-StyleSelector-ComfyUI/issues"
 
 [tool.comfy]
 PublisherId = "demonalone"
-DisplayName = "DemoAlone-StyleSelector-ComfyUI"
+DisplayName = "DemonAlone-StyleSelector-ComfyUI"
 Icon = ""
 includes = [] 

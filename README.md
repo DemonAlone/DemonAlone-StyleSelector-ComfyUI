@@ -62,7 +62,7 @@ This extension is built upon existing open-source projects:
 Image Gallery Loader logic based on [ComfyUi-ImageGalleryLoader](https://github.com/BigStationW/ComfyUi-ImageGalleryLoader).
 
 Easy-use Style Selector node inspired by the Insired [Easy-use](https://github.com/yolain/ComfyUI-Easy-Use) Style selector.
-Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler.).
+Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler).
 ## 🤖 AI Assistance
 This project was created with significant assistance from AI models:
 

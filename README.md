@@ -1,6 +1,7 @@
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
+<img width="1118" height="1112" alt="1" src="https://github.com/user-attachments/assets/198c3b57-6466-498a-8f16-2f44754011a3" />
 
 <div align="center">
 
@@ -68,3 +69,5 @@ This project was created with significant assistance from AI models:
 Google Gemini / Gemma
 Qwen 3.5
 DeepSeek v3
+
+### 🖼️ The images were made on vanilla SDXL 1.0

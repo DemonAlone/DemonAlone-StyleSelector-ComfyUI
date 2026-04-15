@@ -68,3 +68,5 @@ This project was created with significant assistance from AI models:
 Google Gemini / Gemma
 Qwen 3.5
 DeepSeek v3
+
+### 🖼️ The images were made on vanilla SDXL 1.0

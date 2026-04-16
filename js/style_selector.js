@@ -14,7 +14,7 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// --- Global styles injection (called once on extension load) ---
+// --- Global styles injection ---
 function ensureGlobalStyles() {
     if (document.getElementById('styleselector-gallery-styles')) return;
 
@@ -48,6 +48,11 @@ function ensureGlobalStyles() {
             border: 1px solid #555; padding: 12px 10px; border-radius: 4px; font-size: 15px;
         }
         .styleselector-root .styleselector-controls input[type=text]:focus { outline: none; border-color: #00FFC9; }
+        .styleselector-root .styleselector-controls select {
+            background: #333; color: #ccc; border: 1px solid #555;
+            padding: 12px 10px; border-radius: 4px; font-size: 15px;
+            cursor: pointer;
+        }
         .styleselector-root .styleselector-controls button {
             background: #444; color: #fff; border: none; border-radius: 4px;
             padding: 6px 6px; cursor: pointer; font-size: 24px; flex-shrink: 0;
@@ -182,7 +187,6 @@ function ensureGlobalStyles() {
     document.head.appendChild(style);
 }
 
-// Called globally on module load
 ensureGlobalStyles();
 
 const DA_StyleSelectorNode = {
@@ -231,6 +235,8 @@ const DA_StyleSelectorNode = {
                 selectedImages: [],
                 sortOrder: "name",
                 previewSize: 110,
+                selectedDatabase: "",
+                availableDatabases: [],
                 elements: {},
                 cachedHeights: { controls: 0, selectedDisplay: 0 },
                 visibleRange: { start: 0, end: 0 },
@@ -243,7 +249,7 @@ const DA_StyleSelectorNode = {
             if (!this.properties.image_gallery_unique_id) {
                 this.properties.image_gallery_unique_id = "style-selector-" + Math.random().toString(36).substring(2, 11);
             }
-			// Size limits
+            
             const HEADER_HEIGHT = 80;
             const MIN_NODE_WIDTH = 600;
             const MIN_GALLERY_HEIGHT = 200;
@@ -269,9 +275,14 @@ const DA_StyleSelectorNode = {
             const selectionWidget = this.addWidget("hidden_text", "selected_image",
                 this.properties.selected_image || "", () => {}, { multiline: false });
             selectionWidget.serializeValue = () => {
-                const val = node.properties["selected_image"] || "";
-                return val;
+                return node.properties["selected_image"] || "";
             };
+
+            const databaseWidget = this.addWidget("hidden_text", "database",
+                this.properties.database || "", () => {}, {});
+            databaseWidget.serializeValue = () => node.properties.database;
+            databaseWidget.draw = () => {};
+            databaseWidget.computeSize = () => [0, 0];
             
             // Container creation
             const widgetContainer = document.createElement("div");
@@ -291,8 +302,10 @@ const DA_StyleSelectorNode = {
                             <span class="selected-name" title="">None</span>
                         </div>
                         <div class="styleselector-controls">
+                            <select class="database-select" title="Select style database"></select>
                             <input type="text" class="search-input" placeholder="🔍 Search style...">
                             <button class="refresh-btn" title="Refresh style list">🔄</button>
+                            <button class="clear-btn" title="Clear selected styles">🗑️</button>
                         </div>
                         <div class="styleselector-size-control">
                             <span class="size-label size-label-small">🖼️</span>
@@ -317,11 +330,13 @@ const DA_StyleSelectorNode = {
             els.searchInput = widgetContainer.querySelector(".search-input");
             els.selectedName = widgetContainer.querySelector(".selected-name");
             els.refreshBtn = widgetContainer.querySelector(".refresh-btn");
+            els.clearBtn = widgetContainer.querySelector(".clear-btn");
             els.selectedDisplay = widgetContainer.querySelector(".styleselector-selected-display");
             els.controls = widgetContainer.querySelector(".styleselector-controls");
             els.sizeSlider = widgetContainer.querySelector(".size-slider");
             els.sizeControl = widgetContainer.querySelector(".styleselector-size-control");
             els.globalTooltip = widgetContainer.querySelector(".global-tooltip");
+            els.databaseSelect = widgetContainer.querySelector(".database-select");
 
             const cacheHeights = () => {
                 if (els.controls) state.cachedHeights.controls = els.controls.offsetHeight;
@@ -329,10 +344,11 @@ const DA_StyleSelectorNode = {
             };
 
             // === API FUNCTIONS ===
-            const getImages = async (page = 1, search = "") => {
+            const getImages = async (page = 1, search = "", forceReload = false) => {
                 state.isLoading = true;
                 try {
-                    const url = `/styleselector/get_images?page=${page}&per_page=100&search=${encodeURIComponent(search)}`;
+                    const forceParam = forceReload ? '&force=true' : '';
+                    const url = `/styleselector/get_images?page=${page}&per_page=100&search=${encodeURIComponent(search)}&database=${encodeURIComponent(state.selectedDatabase)}${forceParam}`;
                     const response = await api.fetchApi(url);
                     const data = await response.json();
                     state.totalPages = data.total_pages || 1;
@@ -344,6 +360,42 @@ const DA_StyleSelectorNode = {
                 } finally {
                     state.isLoading = false;
                 }
+            };
+
+            const fetchDatabases = async () => {
+                try {
+                    const response = await api.fetchApi("/styleselector/get_databases");
+                    const data = await response.json();
+                    state.availableDatabases = data.databases || [];
+                } catch (e) {
+                    console.error("DA_StyleSelector: Error fetching databases", e);
+                    state.availableDatabases = [];
+                }
+                // Обновляем выпадающий список
+                els.databaseSelect.innerHTML = "";
+                if (state.availableDatabases.length === 0) {
+                    const opt = document.createElement("option");
+                    opt.textContent = "No databases found";
+                    opt.disabled = true;
+                    els.databaseSelect.appendChild(opt);
+                } else {
+                    state.availableDatabases.forEach(db => {
+                        const opt = document.createElement("option");
+                        opt.value = db;
+                        opt.textContent = db;
+                        els.databaseSelect.appendChild(opt);
+                    });
+                }
+                // Устанавливаем текущую базу
+                if (state.selectedDatabase && state.availableDatabases.includes(state.selectedDatabase)) {
+                    els.databaseSelect.value = state.selectedDatabase;
+                } else if (state.availableDatabases.length > 0) {
+                    state.selectedDatabase = state.availableDatabases[0];
+                    els.databaseSelect.value = state.selectedDatabase;
+                } else {
+                    state.selectedDatabase = "";
+                }
+                node.setProperty("database", state.selectedDatabase);
             };
 
             const updateSelection = () => {
@@ -379,7 +431,8 @@ const DA_StyleSelectorNode = {
 
                 DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
                     selected_image: state.selectedImages,
-                    preview_size: state.previewSize
+                    preview_size: state.previewSize,
+                    selected_database: state.selectedDatabase
                 });
             };
 
@@ -418,7 +471,7 @@ const DA_StyleSelectorNode = {
                 );
             };
 
-            // Function to show global tooltip
+            // Tooltip functions (same as before)
             const showTooltip = (card, tooltipHtmlString) => {
                 if (!els.globalTooltip || !els.root) return;
                 
@@ -579,7 +632,7 @@ const DA_StyleSelectorNode = {
                 els.viewport.appendChild(fragment);
             };
 
-            // === Tooltip handlers (delegation) ===
+            // === Tooltip handlers ===
             els.viewport.addEventListener("mouseenter", (e) => {
                 const card = e.target.closest(".styleselector-image-card");
                 if (!card) return;
@@ -599,7 +652,7 @@ const DA_StyleSelectorNode = {
                 hideTooltip();
             }, { passive: true });
 
-            // Click for style selection
+            // Click selection
             els.viewport.addEventListener("click", (e) => {
                 const card = e.target.closest(".styleselector-image-card");
                 if (!card) return;
@@ -616,7 +669,7 @@ const DA_StyleSelectorNode = {
                 updateSelection();
             });
 
-            const fetchAndRender = async (append = false) => {
+            const fetchAndRender = async (append = false, forceReload = false) => {
                 if (state.isLoading) return;
                 
                 const pageToFetch = append ? state.currentPage + 1 : 1;
@@ -629,7 +682,8 @@ const DA_StyleSelectorNode = {
                 
                 const { images } = await getImages(
                     pageToFetch, 
-                    els.searchInput.value
+                    els.searchInput.value,
+                    forceReload
                 );
 
                 if (append) {
@@ -661,6 +715,32 @@ const DA_StyleSelectorNode = {
                 }
             });
 
+            // Database selection change
+            els.databaseSelect.addEventListener("change", async () => {
+                const newDb = els.databaseSelect.value;
+                if (newDb === state.selectedDatabase) return;
+                state.selectedDatabase = newDb;
+                node.setProperty("database", newDb);
+                // Сбрасываем выбранные изображения при смене базы? Лучше оставить, но можно и сбросить.
+                // Для безопасности сбросим.
+                state.selectedImages = [];
+                updateSelection();
+                await fetchAndRender(false);
+                DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
+                    selected_database: state.selectedDatabase,
+                    selected_image: state.selectedImages,
+                    preview_size: state.previewSize
+                });
+            });
+
+            // Clear selected styles button
+            els.clearBtn.addEventListener("click", () => {
+                state.selectedImages = [];
+                updateSelection();
+                // После очистки состояния обновляем отображение карточек
+                renderVisibleCards();
+            });
+
             // Preview size slider
             let sizeSliderTimeout;
             els.sizeSlider.addEventListener("input", (e) => {
@@ -670,14 +750,15 @@ const DA_StyleSelectorNode = {
                 clearTimeout(sizeSliderTimeout);
                 sizeSliderTimeout = setTimeout(() => {
                     DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
-                        preview_size: state.previewSize 
+                        preview_size: state.previewSize,
+                        selected_database: state.selectedDatabase
                     });
                 }, 500);
             });
 
             // Refresh button
             els.refreshBtn.addEventListener("click", () => {
-                fetchAndRender(false);
+                fetchAndRender(false, true);
             });
 
             let scrollRAF = null;
@@ -735,12 +816,15 @@ const DA_StyleSelectorNode = {
                 }
             };
 
-            this.initializeNode = async () => {    
-                const existingSelectedImage = node.properties?.selected_image || "";
+            this.initializeNode = async () => {
+                // Загружаем список баз
+                await fetchDatabases();
                 
+                // Загружаем сохранённое состояние
                 let initialState = { 
                     selected_image: [], 
-                    preview_size: 110 
+                    preview_size: 110,
+                    selected_database: state.selectedDatabase || (state.availableDatabases[0] || "")
                 };
                 
                 try {
@@ -754,11 +838,21 @@ const DA_StyleSelectorNode = {
                     }
                     initialState = { 
                         selected_image: loadedSelected, 
-                        preview_size: loadedState.preview_size || 110 
+                        preview_size: loadedState.preview_size || 110,
+                        selected_database: loadedState.selected_database || initialState.selected_database
                     };
                 } catch(e) { 
                     console.error("[Gallery Debug] Failed to get initial UI state:", e); 
                 }
+
+                // Применяем базу, если она есть в списке доступных, иначе берём первую
+                if (initialState.selected_database && state.availableDatabases.includes(initialState.selected_database)) {
+                    state.selectedDatabase = initialState.selected_database;
+                } else if (state.availableDatabases.length > 0) {
+                    state.selectedDatabase = state.availableDatabases[0];
+                }
+                els.databaseSelect.value = state.selectedDatabase;
+                node.setProperty("database", state.selectedDatabase);
 
                 state.previewSize = initialState.preview_size;
                 if (els.sizeSlider) els.sizeSlider.value = state.previewSize;
@@ -769,6 +863,7 @@ const DA_StyleSelectorNode = {
 
                 state.selectedImages = initialState.selected_image.filter(name => name && typeof name === 'string');
                 
+                const existingSelectedImage = node.properties?.selected_image || "";
                 if (existingSelectedImage && state.selectedImages.length === 0) {
                     const namesFromProp = existingSelectedImage.split(',').map(s => s.trim()).filter(s => s);
                     if (namesFromProp.length > 0) {
@@ -804,6 +899,12 @@ const DA_StyleSelectorNode = {
                         }, 100);
                     }
                 }
+                
+                DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
+                    selected_database: state.selectedDatabase,
+                    selected_image: state.selectedImages,
+                    preview_size: state.previewSize
+                });
             };
 
             const originalOnRemoved = this.onRemoved;

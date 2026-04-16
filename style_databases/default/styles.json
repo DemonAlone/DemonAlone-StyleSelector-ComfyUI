@@ -484,6 +484,56 @@
     "positive": "romantic style, emotional, dramatic, nature-focused, detailed",
     "negative_prompt": "unemotional, flat, city-focused, low detail"
     },
+	{
+    "name": "Op art",
+    "positive": "op art style, optical illusions, geometric, black and white, detailed",
+    "negative_prompt": "no illusions, organic, colorful, low detail"
+    },
+    {
+    "name": "Kinetic art",
+    "positive": "kinetic art style, movement, dynamic, interactive, detailed",
+    "negative_prompt": "static, static, non-interactive, low detail"
+    },
+    {
+    "name": "Native American",
+    "positive": "Native American style, traditional patterns, tribal, cultural symbols, highly detailed",
+    "negative_prompt": "modern, non-tribal, abstract, undetailed"
+    },
+    {
+    "name": "Mayan",
+    "positive": "Mayan style, glyphs, ancient civilization, detailed carvings, highly detailed",
+    "negative_prompt": "modern, non-Mayan, simplistic, undetailed"
+    },
+    {
+    "name": "Edo",
+    "positive": "Edo style, Japanese, woodblock prints, floating world, highly detailed",
+    "negative_prompt": "non-Japanese, oil painting, real world, undetailed"
+    },
+    {
+    "name": "Mandala",
+    "positive": "Mandala style, spiritual, geometric, symmetrical, highly detailed",
+    "negative_prompt": "secular, organic, asymmetrical, undetailed"
+    },
+    {
+    "name": "Sumi-e",
+    "positive": "Sumi-e style, Japanese ink painting, minimal, nature, highly detailed",
+    "negative_prompt": "non-Japanese, colorful, urban, undetailed"
+    },
+    {
+    "name": "Khokhloma",
+    "positive": "Khokhloma style, Russian, folk art, floral, highly detailed",
+    "negative_prompt": "non-Russian, fine art, geometric, undetailed"
+    },
+    {
+    "name": "Biedermeier",
+    "positive": "Biedermeier style, 19th century, domestic, unpretentious, highly detailed",
+    "negative_prompt": "21st century, public, pretentious, undetailed"
+    },
+    {
+    "name": "Gupta",
+    "positive": "Gupta style, Indian, ancient, sculpture, highly detailed",
+    "negative_prompt": "non-Indian, modern, painting, undetailed"
+    },
     {
     "name": "realistic supressor",
     "positive": "",

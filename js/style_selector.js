@@ -371,7 +371,7 @@ const DA_StyleSelectorNode = {
                     console.error("DA_StyleSelector: Error fetching databases", e);
                     state.availableDatabases = [];
                 }
-                // Обновляем выпадающий список
+                // Update dropdown list
                 els.databaseSelect.innerHTML = "";
                 if (state.availableDatabases.length === 0) {
                     const opt = document.createElement("option");
@@ -386,7 +386,7 @@ const DA_StyleSelectorNode = {
                         els.databaseSelect.appendChild(opt);
                     });
                 }
-                // Устанавливаем текущую базу
+                // Set current database
                 if (state.selectedDatabase && state.availableDatabases.includes(state.selectedDatabase)) {
                     els.databaseSelect.value = state.selectedDatabase;
                 } else if (state.availableDatabases.length > 0) {
@@ -721,8 +721,8 @@ const DA_StyleSelectorNode = {
                 if (newDb === state.selectedDatabase) return;
                 state.selectedDatabase = newDb;
                 node.setProperty("database", newDb);
-                // Сбрасываем выбранные изображения при смене базы? Лучше оставить, но можно и сбросить.
-                // Для безопасности сбросим.
+                // Reset selected images when changing database? Better to keep them, but can reset.
+                // For safety, we will reset.
                 state.selectedImages = [];
                 updateSelection();
                 await fetchAndRender(false);
@@ -817,7 +817,7 @@ const DA_StyleSelectorNode = {
             };
 
             this.initializeNode = async () => {
-                // Загружаем список баз
+                // Load the list of databases
                 await fetchDatabases();
                 
                 // Загружаем сохранённое состояние
@@ -845,7 +845,7 @@ const DA_StyleSelectorNode = {
                     console.error("[Gallery Debug] Failed to get initial UI state:", e); 
                 }
 
-                // Применяем базу, если она есть в списке доступных, иначе берём первую
+                // Apply the database if it exists in the available list, otherwise take the first one
                 if (initialState.selected_database && state.availableDatabases.includes(initialState.selected_database)) {
                     state.selectedDatabase = initialState.selected_database;
                 } else if (state.availableDatabases.length > 0) {

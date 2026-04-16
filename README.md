@@ -59,8 +59,8 @@ After editing styles.json or adding new images, you need to refresh the node:
 If your image does not show a tooltip with prompts, or if you see an error message in the console:
 
     DA_StyleSelector: Style 'YOUR STYLE NAME' not found in styles.json
-*Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
-*Verify the JSON syntax is correct and valid.
+* Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
+* Verify the JSON syntax is correct and valid.
 
 ### Page Reload Behavior
 While simple refresh works for most updates, remember that the initial registration of a new database folder may require a browser reload after pressing "Refresh style list".

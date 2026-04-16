@@ -1,7 +1,7 @@
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-<img width="990" height="988" alt="1" src="https://github.com/user-attachments/assets/b250a062-5670-459d-8184-79db3f554715" />
+<img width="821" height="824" alt="1" src="https://github.com/user-attachments/assets/2f0f874c-f71d-4195-946d-d87db109be8b" />
 
 ## 📖 About
 
@@ -59,8 +59,8 @@ After editing styles.json or adding new images, you need to refresh the node:
 If your image does not show a tooltip with prompts, or if you see an error message in the console:
 
     DA_StyleSelector: Style 'YOUR STYLE NAME' not found in styles.json
-*Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
-*Verify the JSON syntax is correct and valid.
+* Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
+* Verify the JSON syntax is correct and valid.
 
 ### Page Reload Behavior
 While simple refresh works for most updates, remember that the initial registration of a new database folder may require a browser reload after pressing "Refresh style list".

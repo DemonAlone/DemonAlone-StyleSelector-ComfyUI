@@ -17,7 +17,7 @@ _styles_cache = {}
 _styles_cache_time = {}
 
 def get_available_databases():
-    """Возвращает список имён подпапок внутри style_databases, которые содержат styles.json и папку previews."""
+    """Returns list of subfolder names within style_databases that contain styles.json and previews folder."""
     databases = []
     if not os.path.exists(STYLE_DATABASES_DIR):
         return databases
@@ -32,22 +32,22 @@ def get_available_databases():
 
 def get_database_paths(database_name):
     """
-    Возвращает (previews_dir, json_path) для указанной базы.
-    Если база не существует, возвращает пути для первой доступной базы (fallback).
-    Если доступных баз нет, возвращает (None, None).
+    Returns (previews_dir, json_path) for specified database.
+    If database doesn't exist, returns paths for first available database (fallback).
+    If no available databases, returns (None, None).
     """
     available = get_available_databases()
     if not available:
         return None, None
     if database_name not in available:
-        database_name = available[0]  # fallback на первую
+        database_name = available[0]  # fallback to first
     db_path = os.path.join(STYLE_DATABASES_DIR, database_name)
     previews_dir = os.path.join(db_path, "previews")
     json_path = os.path.join(db_path, "styles.json")
     return previews_dir, json_path
 
 def load_styles_json(database_name, force=False):
-    """Загружает styles.json для указанной базы с кэшированием."""
+    """Loads styles.json for specified database with caching."""
     _, json_path = get_database_paths(database_name)
     if not json_path or not os.path.exists(json_path):
         return {}
@@ -74,7 +74,7 @@ def load_styles_json(database_name, force=False):
         return {}
 
 def _scan_input_directory(input_dir):
-    """Возвращает отсортированный список имён файлов изображений и словарь их mtime."""
+    """Returns sorted list of image file names and dictionary of their mtimes."""
     if not input_dir or not os.path.exists(input_dir):
         return [], {}
     images = []
@@ -95,7 +95,7 @@ def _scan_input_directory(input_dir):
 
 @server.PromptServer.instance.routes.get("/styleselector/get_databases")
 async def get_databases_endpoint(request):
-    """Возвращает список доступных баз стилей."""
+    """Returns list of available style databases."""
     databases = get_available_databases()
     return web.json_response({"databases": databases})
 
@@ -227,7 +227,7 @@ async def set_ui_state(request):
             selected_images = [selected_images]
         ui_states[node_key]['selected_image'] = selected_images
 
-        # Сохраняем также выбранную базу
+        # Also save selected database
         if 'selected_database' in state:
             ui_states[node_key]['selected_database'] = state['selected_database']
 
@@ -304,15 +304,26 @@ class DA_StyleSelector:
     CATEGORY = "Style selector"
 
     @classmethod
+    @classmethod
     def IS_CHANGED(cls, selected_image="", database="", **kwargs):
-        # При изменении выбранных изображений или базы – считаем ноду изменившейся
-        return f"{database}_{selected_image}"
-
+        # Base part: database and selected image
+        base = f"{database}_{selected_image}"
+        # Add mtime of styles file to respond to content changes
+        mtime = ""
+        if database:
+            _, json_path = get_database_paths(database)
+            if json_path and os.path.exists(json_path):
+                try:
+                    mtime = str(os.path.getmtime(json_path))
+                except OSError:
+                    pass
+        return f"{base}_{mtime}"
+        
     @classmethod
     def VALIDATE_INPUTS(cls, selected_image="", database="", **kwargs):
         if not selected_image:
             return True
-        # Проверяем, что база существует, иначе предупреждение
+        # Check that database exists, otherwise warning
         available = get_available_databases()
         if database not in available:
             return f"Database '{database}' not available"
@@ -337,7 +348,7 @@ class DA_StyleSelector:
         positive = positive or ""
         negative = negative or ""
 
-        # Если база не указана, пытаемся взять первую доступную
+        # If database not specified, try to use first available one
         available = get_available_databases()
         if not database and available:
             database = available[0]

@@ -534,7 +534,107 @@
     "positive": "Gupta style, Indian, ancient, sculpture, highly detailed",
     "negative_prompt": "non-Indian, modern, painting, undetailed"
     },
+	{
+    "name": "Monet",
+    "positive": "Monet style, Impressionist, light-filled, loose brushwork, en plein air, defined",
+    "negative_prompt": "detailed"
+    },
+	{
+    "name": "Blade Runner",
+    "positive": "Blade Runner, Cyberpunk, neon-lit, rainy, dystopian, noir, cinematic, highly detailed",
+    "negative_prompt": "bright, sunny, utopian, cheerful, undetailed"
+    },
     {
+    "name": "Mad Max",
+    "positive": "Mad Max, Post-apocalyptic, desert landscapes, dystopian, cinematic, highly detailed",
+    "negative_prompt": "utopian, lush landscapes, pre-apocalyptic, undetailed"
+    },
+    {
+    "name": "2001 A Space Odyssey",
+    "positive": "2001 A Space Odyssey, Sci-fi, space exploration, monolith, cinematic, highly detailed",
+    "negative_prompt": "fantasy, earth exploration, monochrome, undetailed"
+    },
+    {
+    "name": "Minions",
+    "positive": "Minions, Animated, comedy, minions, highly detailed",
+    "negative_prompt": "live-action, drama, no minions, undetailed"
+    },
+    {
+    "name": "Chibi Style Art",
+    "positive": "chibi style, Japanese, super-deformed, cute, exaggerated features, vibrant colors, highly detailed",
+    "negative_prompt": "realistic, 3D, CG, western comics, black and white"
+    },
+    {
+    "name": "Pixar",
+    "positive": "Pixar, 3D animation, heartwarming stories, photorealistic environments, appealing character designs, emotional depth, detailed, professional",
+    "negative_prompt": "2D, anime, manga, black and white, sketchy"
+    },
+    {
+    "name": "Van Gogh",
+    "positive": "Van Gogh style, Expressive, impasto, swirling brushwork, vibrant",
+    "negative_prompt": "photorealistic"
+    },
+    {
+    "name": "Warhol",
+    "positive": "Warhol style, Pop art, bold colors, mass production, repetitive, subdued colors",
+    "negative_prompt": "traditional"
+    },
+    {
+    "name": "Picasso",
+    "positive": "Picasso style, Cubist, geometric, abstract, innovative",
+    "negative_prompt": "detailed"
+    },
+    {
+    "name": "Banksy",
+    "positive": "Banksy style, Street Art, stencil, satirical, black and white",
+    "negative_prompt": "oil painting"
+    },
+    {
+    "name": "Grant Wood",
+    "positive": "Grant Wood style, Regionalist, rural, detailed, Americana",
+    "negative_prompt": "abstract"
+    },
+    {
+    "name": "Edvard Munch",
+    "positive": "Edvard Munch style, Expressionist, psychological, bold colors, distorted, impressionism",
+    "negative_prompt": ""
+    },
+    {
+    "name": "Portrait Photography Style Charismatic",
+    "positive": "charismaic, 50mm lens, f/2.8, focused on eyes, natural lighting",
+    "negative_prompt": "overexposed, underexposed, blurry, distorted, overprocessed"
+    },
+    {
+    "name": "Portrait Photography Style Cinematic",
+    "positive": "cinematic portrait, 85mm lens, f/1.8, dramatic side lighting, moody atmosphere",
+    "negative_prompt": "overblown highlights, noisy, grainy, oversaturated, wide-angle distortion"
+    },
+    {
+    "name": "Portrait Photography Style Environmental",
+    "positive": "environmental portrait, 35mm lens, f/4, wider context, natural surroundings",
+    "negative_prompt": "cluttered background, poor lighting, overexposed, underexposed, unsharp"
+    },
+    {
+    "name": "Spray Paint",
+    "positive": "spray paint art, street style, vibrant, spontaneous, bold, rough, refined",
+    "negative_prompt": "soft"
+    },
+    {
+    "name": "Encaustic",
+    "positive": "encaustic painting, wax, textured, layered, luminous, rich, flat",
+    "negative_prompt": "smooth"
+    },
+    {
+    "name": "Macrame",
+    "positive": "macrame style, knotted, textile, intricate, handmade, decorative, smooth",
+    "negative_prompt": "flat"
+    },
+    {
+    "name": "Gouache",
+    "positive": "gouache painting of, vibrant, opaque, smooth, rich, detailed,transparent",
+    "negative_prompt": "loose"
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

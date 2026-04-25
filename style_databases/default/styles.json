@@ -635,6 +635,61 @@
     "negative_prompt": "loose"
     },
 	{
+    "name": "Streetwear",
+    "positive": "rocking the streetwear trend. Urban, hip-hop influence, sneakers, caps, oversized",
+    "negative_prompt": "preppy, conservative, formal, traditional"
+    },
+    {
+    "name": "Vintage",
+    "positive": "vintage style photo, Retro, nostalgic, old-fashioned, timeless",
+    "negative_prompt": "modern, futuristic, trendy, transient"
+    },
+    {
+    "name": "Grunge",
+    "positive": "sporting a grunge look, '90s influence, flannel, band tees, distressed",
+    "negative_prompt": "preppy, glamorous, feminine, tailored"
+    },
+    {
+    "name": "Glamorous",
+    "positive": "  looking glamorous. Luxury, sequins, fur, red carpet ready",
+    "negative_prompt": "casual, relaxed, sporty, minimalist"
+    },
+    {
+    "name": "Hipster",
+    "positive": "hipster outfit, Eclectic, indie, non-mainstream, vintage",
+    "negative_prompt": "mainstream, sporty, glamorous, preppy"
+    },
+    {
+    "name": "Business Casual",
+    "positive": "  dressed in business casual. Semi-formal, tailored, smart, professional",
+    "negative_prompt": "sporty, casual, grunge, punk"
+    },
+    {
+    "name": "Country",
+    "positive": "country style, Western, cowboy boots, plaid, denim",
+    "negative_prompt": "gothic, punk, high fashion, glamorous"
+    },
+    {
+    "name": "Lolita",
+    "positive": "Lolita ensembl, Victorian-inspired, frilly, bows, lace, layered",
+    "negative_prompt": "minimalist, sporty, casual, business"
+    },
+    {
+    "name": "Pin-Up",
+    "positive": "pin-up style photo, Retro, feminine, seductive, fun",
+    "negative_prompt": "modern, conservative, modest, non-vintage"
+    },
+    {
+    "name": "Macro",
+    "positive": "macro shot of, Extremely close-up, detailed, intricate, revealing",
+    "negative_prompt": "wide shot, undetailed, simple, concealing"
+    },
+    {
+    "name": "Night",
+    "positive": "night shot of, Dark, lit, moody, mysterious",
+    "negative_prompt": "daytime, bright, cheerful, clear"
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

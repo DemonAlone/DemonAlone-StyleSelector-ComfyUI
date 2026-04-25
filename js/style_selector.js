@@ -14,6 +14,117 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+// --- Simple Markdown to HTML converter (handles basic formatting) ---
+function simpleMarkdownToHtml(md) {
+    if (!md) return "";
+    
+    // Extract code blocks so their content isn't mangled during HTML escaping later
+    const codeBlocks = [];
+    let processed = md.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const placeholder = `%%CODEBLOCK_${codeBlocks.length}%%`;
+        codeBlocks.push(code.trim());
+        return placeholder;
+    });
+
+    // Escape HTML characters to prevent XSS and interpret markdown inside code blocks correctly
+    processed = escapeHtml(processed);
+
+    // Headers
+    processed = processed.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    processed = processed.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    processed = processed.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+    // Bold and Italic text
+    processed = processed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    processed = processed.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+   // Inline code
+    processed = processed.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Links
+    processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+    // Lists (unordered)
+    processed = processed.replace(/^- (.+)$/gm, '<li>$1</li>');
+    processed = processed.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+
+    // Line breaks and paragraphs
+    processed = processed.replace(/\n\n/g, '</p><p>');
+    processed = processed.replace(/\n/g, '<br>');
+
+    // Wrap the result in a paragraph tag if it doesn't contain any block-level elements (like headings or lists)
+    if (!/<[hul]/.test(processed)) {
+        processed = `<p>${processed}</p>`;
+    }
+
+    // Line breaks and paragraphs
+    processed = processed.replace(/%%CODEBLOCK_(\d+)%%/g, (match, index) => {
+        const code = codeBlocks[parseInt(index)];
+        return `<pre><code>${escapeHtml(code)}</code></pre>`;
+    });
+
+    return processed;
+}
+
+// --- Help text for Style Selector (Markdown) ---
+const HELP_MARKDOWN = `
+## 🛠 How to Add Your Own Style
+
+To use custom styles or databases, follow this new directory structure and configuration method:
+
+### 1. Create Base Directory
+Create a folder named after your database (e.g., "MyStyleBase") inside the "style_databases" folder in your ComfyUI user directory ("ComfyUI/custom_nodes/DemonAlone-StyleSelector-ComfyUI/...".
+
+**Path Structure:**
+
+\`\`\`
+style_databases/
+└── [YourBaseName]/
+    ├── styles.json
+    └── previews/
+        ├── style_name_1.jpg
+        └── style_name_2.png
+\`\`\`
+### 2. Edit styles.json
+The styles.json file must be placed directly inside your specific base folder. Add a record using the following JSON structure:
+
+
+{
+    "name": "The name of your style",
+    "positive": "A positive for the style",
+    "negative_prompt": "Negative for this style"
+}
+
+
+### 3. Add Preview Images
+Images must be stored inside the previews subfolder of your base directory.
+
+Supported formats: .png, .jpg, .jpeg, .webp
+Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. Format JPG is recommended.
+Naming: The image filename must match the name field in "styles.json" exactly (case-sensitive). For example: "Cyberpunk.jpg".
+
+### 4. Load and Refresh Changes
+After editing styles.json or adding new images, you need to refresh the node:
+
+* Update List & Previews: Press the "Refresh style list" button inside the ComfyUI interface. This will update both the dropdown menu and the preview images instantly.
+* New Base (First Time): When creating a brand new base for the very first time, press "Refresh style list", then perform a full page reload (F5 or Ctrl+R) to ensure the new base appears in the ComfyUI dropdown menu.
+
+## ⚠️ Cleanup & Behavior Notes
+* Deleting Previews: If you delete an image from the previews folder, the style will remain in the node's "Selected" area. To remove it from the selection list entirely, you must press the "Clear selected style" button.
+* Multiple Databases: You cannot use styles from different base folders simultaneously within a single node instance.
+* Workaround for Multiple Prompts: If you need to combine prompts from different bases, you can duplicate the node in your workflow and place them next to each other connected by a concat node to merge the final prompt.
+
+## 🚧 Troubleshooting
+If your image does not show a tooltip with prompts, or if you see an error message in the console:
+
+    DA_StyleSelector: Style "YOUR STYLE NAME" not found in styles.json
+* Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
+* Verify the JSON syntax is correct and valid.
+
+### Page Reload Behavior
+While simple refresh works for most updates, remember that the initial registration of a new database folder may require a browser reload after pressing "Refresh style list".
+`;
+
 // --- Global styles injection ---
 function ensureGlobalStyles() {
     if (document.getElementById('styleselector-gallery-styles')) return;
@@ -133,10 +244,10 @@ function ensureGlobalStyles() {
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
 
-        /* Styles for global tooltip */
-        .styleselector-root .global-tooltip {
-            position: absolute;
-            z-index: 1000;
+        /* Styles for the body-level tooltip (fixed positioning) */
+        .styleselector-body-tooltip {
+            position: fixed;
+            z-index: 9999;
             background-color: rgba(10, 10, 10, 0.95);
             color: #eee;
             font-size: 12px;
@@ -152,24 +263,21 @@ function ensureGlobalStyles() {
             display: none;
             border-left: 4px solid #00FFC9;
         }
-
-        .styleselector-root .global-tooltip.visible {
+        .styleselector-body-tooltip.visible {
             display: block;
         }
-
-        .styleselector-root .tooltip-label-pos {
+        
+        .styleselector-body-tooltip .tooltip-label-pos {
             color: #00FFC9;
             font-weight: bold;
             margin-right: 4px;
         }
-        
-        .styleselector-root .tooltip-content-text {
+        .styleselector-body-tooltip .tooltip-content-text {
             color: #ccc;
             display: block;
             margin-top: 2px;
         }
-
-        .styleselector-root .tooltip-label-neg {
+        .styleselector-body-tooltip .tooltip-label-neg {
             color: #ff6b6b;
             font-weight: bold;
             margin-left: 0;
@@ -306,6 +414,7 @@ const DA_StyleSelectorNode = {
                             <input type="text" class="search-input" placeholder="🔍 Search style...">
                             <button class="refresh-btn" title="Refresh style list">🔄</button>
                             <button class="clear-btn" title="Clear selected styles">🗑️</button>
+                            <button class="help-btn" title="Help">❓</button>
                         </div>
                         <div class="styleselector-size-control">
                             <span class="size-label size-label-small">🖼️</span>
@@ -315,10 +424,15 @@ const DA_StyleSelectorNode = {
                         <div class="styleselector-gallery">
                             <div class="styleselector-gallery-viewport"></div>
                         </div>
-                        <div class="global-tooltip"></div>
                     </div>
                 </div>
             `;
+            
+            // --- Create a tooltip element in document.body (outside the node) ---
+            const tooltipEl = document.createElement('div');
+            tooltipEl.className = 'styleselector-body-tooltip';
+            tooltipEl.id = `styleselector-tooltip-${this.id}`;
+            document.body.appendChild(tooltipEl);
             
             // Caching elements
             const els = state.elements;
@@ -335,8 +449,9 @@ const DA_StyleSelectorNode = {
             els.controls = widgetContainer.querySelector(".styleselector-controls");
             els.sizeSlider = widgetContainer.querySelector(".size-slider");
             els.sizeControl = widgetContainer.querySelector(".styleselector-size-control");
-            els.globalTooltip = widgetContainer.querySelector(".global-tooltip");
             els.databaseSelect = widgetContainer.querySelector(".database-select");
+            els.helpBtn = widgetContainer.querySelector(".help-btn");
+            els.globalTooltip = tooltipEl;   // ссылка на body-тултип
 
             const cacheHeights = () => {
                 if (els.controls) state.cachedHeights.controls = els.controls.offsetHeight;
@@ -471,51 +586,40 @@ const DA_StyleSelectorNode = {
                 );
             };
 
-            // Tooltip functions (same as before)
+            // --- Updated tooltip functions (using body-level tooltip) ---
             const showTooltip = (card, tooltipHtmlString) => {
-                if (!els.globalTooltip || !els.root) return;
+                const tooltip = els.globalTooltip;
+                if (!tooltip) return;
                 
-                els.globalTooltip.innerHTML = tooltipHtmlString; 
-                els.globalTooltip.classList.add('visible');
+                tooltip.innerHTML = tooltipHtmlString;
+                // Temporarily display to measure dimensions
+                tooltip.style.visibility = 'hidden';
+                tooltip.classList.add('visible');
                 
-                const rootRect = els.root.getBoundingClientRect();
                 const cardRect = card.getBoundingClientRect();
-                const tooltipRect = els.globalTooltip.getBoundingClientRect();
+                const tooltipWidth = tooltip.offsetWidth;
+                const tooltipHeight = tooltip.offsetHeight;
                 
-                let scale = 1;
-                let parent = els.root.parentElement;
-                while (parent) {
-                    const transform = window.getComputedStyle(parent).transform;
-                    if (transform && transform !== 'none') {
-                        const matrix = transform.match(/matrix\(([^)]+)\)/);
-                        if (matrix) {
-                            const values = matrix[1].split(',').map(parseFloat);
-                            scale = Math.sqrt(values[0] * values[0] + values[1] * values[1]);
-                            break;
-                        }
-                    }
-                    if (parent.classList.contains('litegraph') || parent.classList.contains('graph-canvas')) break;
-                    parent = parent.parentElement;
+                let left = cardRect.right + 8;
+                let top = cardRect.top;
+                
+                // Prevent overflow on the right
+                if (left + tooltipWidth > window.innerWidth - 8) {
+                    left = cardRect.left - tooltipWidth - 8;
+                }
+                // Prevent overflow on the left
+                if (left < 8) left = 8;
+                
+                // Center vertically relative to the card, but keep within viewport
+                let topPos = cardRect.top + cardRect.height / 2 - tooltipHeight / 2;
+                if (topPos < 8) topPos = 8;
+                if (topPos + tooltipHeight > window.innerHeight - 8) {
+                    topPos = window.innerHeight - tooltipHeight - 8;
                 }
                 
-                let left = (cardRect.right - rootRect.left) / scale + 8;
-                let top = (cardRect.top - rootRect.top) / scale;
-                
-                const tooltipWidth = tooltipRect.width / scale;
-                const rootWidth = rootRect.width / scale;
-                const tooltipHeight = tooltipRect.height / scale;
-                const rootHeight = rootRect.height / scale;
-                
-                if (left + tooltipWidth > rootWidth - 8) {
-                    left = (cardRect.left - rootRect.left) / scale - tooltipWidth - 8;
-                }
-                
-                const maxTop = rootHeight - tooltipHeight - 8;
-                if (top > maxTop) top = maxTop;
-                if (top < 8) top = 8;
-                
-                els.globalTooltip.style.left = left + 'px';
-                els.globalTooltip.style.top = top + 'px';
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.visibility = 'visible';
             };
 
             const hideTooltip = () => {
@@ -632,7 +736,7 @@ const DA_StyleSelectorNode = {
                 els.viewport.appendChild(fragment);
             };
 
-            // === Tooltip handlers ===
+            // === Tooltip event handlers ===
             els.viewport.addEventListener("mouseenter", (e) => {
                 const card = e.target.closest(".styleselector-image-card");
                 if (!card) return;
@@ -648,6 +752,7 @@ const DA_StyleSelectorNode = {
                 hideTooltip();
             }, true);
 
+            // Hide tooltip on gallery scroll
             els.gallery.addEventListener("scroll", () => {
                 hideTooltip();
             }, { passive: true });
@@ -699,7 +804,7 @@ const DA_StyleSelectorNode = {
                 if (!append) cacheHeights();
             };
 
-            // Search
+            // Search handler
             let searchTimeout;
             els.searchInput.addEventListener("input", () => {
                 clearTimeout(searchTimeout);
@@ -721,8 +826,7 @@ const DA_StyleSelectorNode = {
                 if (newDb === state.selectedDatabase) return;
                 state.selectedDatabase = newDb;
                 node.setProperty("database", newDb);
-                // Reset selected images when changing database? Better to keep them, but can reset.
-                // For safety, we will reset.
+                // Reset selected images when changing database
                 state.selectedImages = [];
                 updateSelection();
                 await fetchAndRender(false);
@@ -737,7 +841,6 @@ const DA_StyleSelectorNode = {
             els.clearBtn.addEventListener("click", () => {
                 state.selectedImages = [];
                 updateSelection();
-                // После очистки состояния обновляем отображение карточек
                 renderVisibleCards();
             });
 
@@ -759,6 +862,12 @@ const DA_StyleSelectorNode = {
             // Refresh button
             els.refreshBtn.addEventListener("click", () => {
                 fetchAndRender(false, true);
+            });
+
+            // Help button: show help dialog with Markdown
+            els.helpBtn.addEventListener("click", () => {
+                const htmlContent = simpleMarkdownToHtml(HELP_MARKDOWN);
+                app.ui.dialog.show(htmlContent);
             });
 
             let scrollRAF = null;
@@ -820,7 +929,7 @@ const DA_StyleSelectorNode = {
                 // Load the list of databases
                 await fetchDatabases();
                 
-                // Загружаем сохранённое состояние
+                // Load saved state
                 let initialState = { 
                     selected_image: [], 
                     preview_size: 110,
@@ -912,6 +1021,11 @@ const DA_StyleSelectorNode = {
                 if (scrollRAF) cancelAnimationFrame(scrollRAF);
                 if (resizeRAF) cancelAnimationFrame(resizeRAF);
                 clearTimeout(searchTimeout);
+                
+                // Remove the body tooltip
+                if (els.globalTooltip) {
+                    els.globalTooltip.remove();
+                }
                 
                 state.elements = {};
                 state.availableImages = [];

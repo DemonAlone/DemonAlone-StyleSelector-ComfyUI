@@ -1,14 +1,3 @@
-# DemonAlone-StyleSelector-ComfyUI
-
-> 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-<img width="814" height="698" alt="1" src="https://github.com/user-attachments/assets/5920e239-2242-4abe-92c4-48f8276d7c8a" />
-
-## 📖 About
-
-This ComfyUI extension allows you to manage local style presets directly within the interface. It features a real-time preview, multi-select functionality, search capabilities, and integration with your local prompt base files.
-
----
-
 ## 🛠 How to Add Your Own Style
 
 To use custom styles or databases, follow this new directory structure and configuration method:
@@ -64,19 +53,3 @@ If your image does not show a tooltip with prompts, or if you see an error messa
 
 ### Page Reload Behavior
 While simple refresh works for most updates, remember that the initial registration of a new database folder may require a browser reload after pressing "Refresh style list".
-
-## 🏛 Credits & Acknowledgments
-This extension is built upon existing open-source projects:
-
-Image Gallery Loader logic based on [ComfyUi-ImageGalleryLoader](https://github.com/BigStationW/ComfyUi-ImageGalleryLoader).
-
-Easy-use Style Selector node inspired by the Insired [Easy-use](https://github.com/yolain/ComfyUI-Easy-Use) Style selector.
-Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler).
-## 🤖 AI Assistance
-This project was created with significant assistance from AI models:
-
-Google Gemini / Gemma
-Qwen 3.5
-DeepSeek v3
-
-### 🖼️ The images were made on vanilla SDXL 1.0

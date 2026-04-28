@@ -44,6 +44,18 @@ Supported formats: .png, .jpg, .jpeg, .webp
 Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. Format JPG is recommended.
 Naming: The image filename must match the name field in `styles.json` exactly (case-sensitive). For example: `Cyberpunk.jpg`.
 
+## ⚠️ File Naming Constraints
+To ensure compatibility across all operating systems (Windows, macOS, Linux), please adhere to the following rules when naming styles and preview images:
+
+*   **Allowed Characters:** Use only standard alphanumeric characters (`a-z`, `A-Z`, `0-9`) and basic symbols like underscores (`_`) or hyphens (`-`).
+*   **Forbidden Symbols:** Avoid special characters such as forward slashes (`/`), backslashes (`\`), colons (`:`), asterisks (`*`), question marks (`?`), and quotation marks. These may cause errors depending on your file system.
+*   **Matching Names:** Ensure that the `name` field in `styles.json` exactly matches the preview image filename (case-sensitive).
+
+### Recommended Naming Format:
+**Example:** `Cyberpunk_Street.jpg` or `Cyberpunk-Street.png`
+**Avoid:** `Cyberpunk/Street.jpg` or `Cyberpunk:City.jpg`
+
+
 ### 4. Load and Refresh Changes
 After editing styles.json or adding new images, you need to refresh the node:
 
@@ -79,4 +91,4 @@ Google Gemini / Gemma
 Qwen 3.5
 DeepSeek v3
 
-### 🖼️ The images were made on vanilla SDXL 1.0
+### 🖼️ The images for default were made on vanilla SDXL 1.0. The images for moder were made on vailla Kkein 9b and z-image turbo.

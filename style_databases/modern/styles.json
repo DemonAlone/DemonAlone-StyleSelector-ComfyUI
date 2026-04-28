@@ -1,0 +1,37 @@
+[
+	{
+    "name": "Classic comix",
+    "positive": "Pop art, comic strip, benday dots, primary colors",
+    "negative_prompt": ""
+	},
+	{
+	"name": "Vintage demaged photo",
+    "positive": "photographic plate, sepia daguerreotype, aged texture, damaged film, antique photographic imperfections",
+    "negative_prompt": ""
+	},
+	{
+	"name": "Vintage TV broadcast",
+    "positive": "black-and-white broadcast look, low contrast, soft analog tube-camera grain, classic TV framing",
+    "negative_prompt": ""
+	},
+	{
+    "name": "game-minecraft",
+    "positive": "Minecraft style, blocky, pixelated, vibrant colors, recognizable characters and objects, game assets",
+    "negative_prompt": "smooth, realistic, detailed, photorealistic, noise, blurry, deformed"
+    },
+	{
+	"name": "Glitch art",
+    "positive": "glitch art, heavy RGB shift, scanlines, vaporwave aesthetic",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Ghibli style",
+    "positive": "studio ghibli background painting, lush hand-painted scenery, soft cel-shading, magical atmosphere",
+    "negative_prompt": ""
+	},
+	{
+	"name": "Marvel-DC 1990s style",
+    "positive": "detailed comic book ink art, bold outlines, halftone shading, Marvel-DC 1990s style",
+    "negative_prompt": ""
+	}
+]	

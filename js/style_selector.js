@@ -76,7 +76,6 @@ To use custom styles or databases, follow this new directory structure and confi
 Create a folder named after your database (e.g., "MyStyleBase") inside the "style_databases" folder in your ComfyUI user directory ("ComfyUI/custom_nodes/DemonAlone-StyleSelector-ComfyUI/...".
 
 **Path Structure:**
-
 \`\`\`
 style_databases/
 └── [YourBaseName]/
@@ -88,13 +87,11 @@ style_databases/
 ### 2. Edit styles.json
 The styles.json file must be placed directly inside your specific base folder. Add a record using the following JSON structure:
 
-
 {
     "name": "The name of your style",
     "positive": "A positive for the style",
     "negative_prompt": "Negative for this style"
 }
-
 
 ### 3. Add Preview Images
 Images must be stored inside the previews subfolder of your base directory.
@@ -102,6 +99,17 @@ Images must be stored inside the previews subfolder of your base directory.
 Supported formats: .png, .jpg, .jpeg, .webp
 Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. Format JPG is recommended.
 Naming: The image filename must match the name field in "styles.json" exactly (case-sensitive). For example: "Cyberpunk.jpg".
+
+## ⚠️ File Naming Constraints
+To ensure compatibility across all operating systems (Windows, macOS, Linux), please adhere to the following rules when naming styles and preview images:
+
+*   **Allowed Characters:** Use only standard alphanumeric characters ("a-z", "A-Z", "0-9") and basic symbols like underscores ("_") or hyphens ("-").
+*   **Forbidden Symbols:** Avoid special characters such as forward slashes ("/"), backslashes ("\"), colons (":"), asterisks ("*"), question marks ("?"), and quotation marks. These may cause errors depending on your file system.
+*   **Matching Names:** Ensure that the "name" field in "styles.json" exactly matches the preview image filename (case-sensitive).
+
+### Recommended Naming Format:
+**Example:** "Cyberpunk_Street.jpg" or "Cyberpunk-Street.png"
+**Avoid:** "Cyberpunk/Street.jpg" or "Cyberpunk:City.jpg"
 
 ### 4. Load and Refresh Changes
 After editing styles.json or adding new images, you need to refresh the node:
@@ -239,7 +247,7 @@ function ensureGlobalStyles() {
             display: flex; align-items: center; justify-content: center;
         }
         .styleselector-root .styleselector-image-card p { 
-            font-size: 7px; margin: 0; word-break: break-word; text-align: center; 
+            font-size: 8px; margin: 0; word-break: break-word; text-align: center; 
             color: #aaa; line-height: 1.2; max-height: 26px; overflow: hidden;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }

@@ -681,7 +681,7 @@
     },
     {
     "name": "Night",
-    "positive": "night shot of, Dark, lit, moody, mysterious",
+    "positive": "night shot, dark, lit, moody, mysterious",
     "negative_prompt": "daytime, bright, cheerful, clear"
     },
 	{

@@ -6,7 +6,7 @@
     },
     {
     "name": "sai-analog film",
-    "positive": "analog film photo, faded film, desaturated, 35mm photo, grainy, vignette, vintage, Kodachrome, Lomography, stained, highly detailed, found footage",
+    "positive": "analog film photo, faded film, desaturated, 35mm photo, grainy, vintage, Kodachrome, Lomography, stained, highly detailed, found footage",
     "negative_prompt": "painting, drawing, illustration, glitch, deformed, mutated, cross-eyed, ugly, disfigured"
     },
     {
@@ -16,7 +16,7 @@
     },
     {
     "name": "sai-cinematic",
-    "positive": "cinematic film still, shallow depth of field, vignette, highly detailed, high budget, bokeh, cinemascope, moody, epic, gorgeous, film grain, grainy",
+    "positive": "cinematic film still, shallow depth of field, highly detailed, high budget, bokeh, cinemascope, moody, epic, gorgeous, film grain, grainy",
     "negative_prompt": "anime, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured"
     },
     {
@@ -683,6 +683,21 @@
     "name": "Night",
     "positive": "night shot, dark, lit, moody, mysterious",
     "negative_prompt": "daytime, bright, cheerful, clear"
+    },
+	{
+    "name": "Diorama",
+    "positive": "diorama, imaginative lifelike 3D scenes in miniature",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Ice Sculpture",
+    "positive": "ice sculpture, often for frozen art, ice carving, cold beauty",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Prismatic",
+    "positive": "fragmented, kaleidoscopic, geometric, prism-like, refracting, rainbow, color palette, shattered",
+    "negative_prompt": ""
     },
 	{
     "name": "realistic supressor",

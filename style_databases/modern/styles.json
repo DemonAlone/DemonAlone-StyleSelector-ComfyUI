@@ -33,5 +33,30 @@
 	"name": "Marvel-DC 1990s style",
     "positive": "detailed comic book ink art, bold outlines, halftone shading, Marvel-DC 1990s style",
     "negative_prompt": ""
-	}
+	},
+	{
+	"name": "Dan Flavin style",
+    "positive": "radiant neon chambers, pure phenomenology, light over image",
+    "negative_prompt": ""
+	},
+	{
+    "name": "Propaganda poster",
+    "positive": "Propaganda poster. Eye-catching layout, symbolic imagery, bold text, dramatic patriotic message",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Rock Album Art",
+    "positive": "rock album art, rebellious imagery,  classic rock",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Scientific Illustration",
+    "positive": "19th century scientific illustration, botanical, anatomical, black and white, detailed engraving, hand-drawn, vintage, specimen",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Underwater Photography",
+    "positive": "underwater photography, aquatic scene, marine life, submerged beauty.",
+    "negative_prompt": ""
+    }
 ]	

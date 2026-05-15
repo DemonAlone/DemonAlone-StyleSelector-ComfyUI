@@ -459,7 +459,7 @@ const DA_StyleSelectorNode = {
             els.sizeControl = widgetContainer.querySelector(".styleselector-size-control");
             els.databaseSelect = widgetContainer.querySelector(".database-select");
             els.helpBtn = widgetContainer.querySelector(".help-btn");
-            els.globalTooltip = tooltipEl;   // ссылка на body-тултип
+            els.globalTooltip = tooltipEl;   // link on body-tooltip
 
             const cacheHeights = () => {
                 if (els.controls) state.cachedHeights.controls = els.controls.offsetHeight;
@@ -471,7 +471,7 @@ const DA_StyleSelectorNode = {
                 state.isLoading = true;
                 try {
                     const forceParam = forceReload ? '&force=true' : '';
-                    const url = `/styleselector/get_images?page=${page}&per_page=100&search=${encodeURIComponent(search)}&database=${encodeURIComponent(state.selectedDatabase)}${forceParam}`;
+                    const url = `/styleselector/get_images?page=${page}&per_page=300&search=${encodeURIComponent(search)}&database=${encodeURIComponent(state.selectedDatabase)}${forceParam}`;
                     const response = await api.fetchApi(url);
                     const data = await response.json();
                     state.totalPages = data.total_pages || 1;
@@ -635,114 +635,138 @@ const DA_StyleSelectorNode = {
                     els.globalTooltip.classList.remove('visible');
                 }
             };
+			const createCardElement = (img, imageHeight) => {
+				const card = document.createElement("div");
+				card.className = "styleselector-image-card";
 
-            const renderVisibleCards = () => {
-                if (!els.viewport || !els.gallery) return;
-                
-                const filteredImages = getFilteredImages();
-                const totalImages = filteredImages.length;
-                
-                if (totalImages === 0) {
-                    els.viewport.innerHTML = '<div class="styleselector-no-images">📂 No styles found<br><small>Add images to the styles folder</small></div>';
-                    els.viewport.style.height = 'auto';
-                    return;
-                }
+				if (state.selectedImages.includes(img.original_name)) {
+					card.classList.add("selected");
+				}
 
-                calculateGridMetrics();
-                
-                const rowHeight = state.cardHeight + 8;
-                const totalRows = Math.ceil(totalImages / state.columnsCount);
-                const totalHeight = totalRows * rowHeight;
-                
-                const scrollTop = els.gallery.scrollTop;
-                const viewportHeight = els.gallery.clientHeight;
-                
-                const buffer = 2;
-                const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
-                const endRow = Math.min(totalRows, Math.ceil((scrollTop + viewportHeight) / rowHeight) + buffer);
-                
-                const startIndex = startRow * state.columnsCount;
-                const endIndex = Math.min(totalImages, endRow * state.columnsCount);
-                
-                if (state.visibleRange.start === startIndex && state.visibleRange.end === endIndex) {
-                    return;
-                }
-                
-                state.visibleRange = { start: startIndex, end: endIndex };
-                
-                const topOffset = startRow * rowHeight;
-                
-                const fragment = document.createDocumentFragment();
-                
-                const topSpacer = document.createElement('div');
-                topSpacer.className = 'styleselector-spacer';
-                topSpacer.style.height = `${topOffset}px`;
-                topSpacer.style.gridColumn = '1 / -1';
-                fragment.appendChild(topSpacer);
-                
-                const imageHeight = Math.round(state.previewSize * 0.9);
-                
-                for (let i = startIndex; i < endIndex; i++) {
-                    const img = filteredImages[i];
-                    const card = document.createElement("div");
-                    card.className = "styleselector-image-card";
-                    
-                    if (state.selectedImages.includes(img.original_name)) {
-                        card.classList.add("selected");
-                    }
-                    
-                    card.dataset.imageName = img.name;
-                    card.dataset.originalName = img.original_name || img.name;
-                    card.dataset.imageWidth = img.width || 0;
-                    card.dataset.imageHeight = img.height || 0;
-                    card.dataset.index = i;
-                    
-                    let displayName = img.name;
-                    const extIndex = displayName.lastIndexOf('.');
-                    if (extIndex > -1) {
-                        displayName = displayName.slice(0, extIndex);
-                    }
-                    const escapedDisplayName = escapeHtml(displayName);
+				card.dataset.imageName = img.name;
+				card.dataset.originalName = img.original_name || img.name;
+				card.dataset.imageWidth = img.width || 0;
+				card.dataset.imageHeight = img.height || 0;
 
-                    const safePosContent = escapeHtml(img.style_positive || "");
-                    const safeNegContent = escapeHtml(img.style_negative || "");
-                    
-                    let tooltipHtml = `<span class="tooltip-label-pos">Positive:</span> <span class="tooltip-content-text">${safePosContent}</span>`;
-                    if (img.style_negative) {
-                        tooltipHtml += `</br><span class="tooltip-label-neg">Negative:</span> <span class="tooltip-content-text">${safeNegContent}</span>`;
-                    } else {
-                         tooltipHtml += `<div style="color:#888; font-size:10px; margin-top:4px;">No negative prompt defined</div>`;
-                    }
+				let displayName = img.name;
+				const extIndex = displayName.lastIndexOf('.');
+				if (extIndex > -1) {
+					displayName = displayName.slice(0, extIndex);
+				}
+				const escapedDisplayName = escapeHtml(displayName);
 
-                    card.dataset.tooltip = tooltipHtml;
+				const safePosContent = escapeHtml(img.style_positive || "");
+				const safeNegContent = escapeHtml(img.style_negative || "");
 
-                    card.innerHTML = `
-                        <div class="styleselector-media-container" style="height: ${imageHeight}px;">
-                            <img src="${img.preview_url || EMPTY_IMAGE}" loading="lazy" decoding="async" alt="${escapedDisplayName}">
-                        </div>
-                        <div class="styleselector-image-card-info">
-                            <p>${escapedDisplayName}</p>
-                        </div>
-                    `;
+				let tooltipHtml = `<span class="tooltip-label-pos">Positive:</span> <span class="tooltip-content-text">${safePosContent}</span>`;
+				if (img.style_negative) {
+					tooltipHtml += `</br><span class="tooltip-label-neg">Negative:</span> <span class="tooltip-content-text">${safeNegContent}</span>`;
+				} else {
+					tooltipHtml += `<div style="color:#888; font-size:10px; margin-top:4px;">No negative prompt defined</div>`;
+				}
+				card.dataset.tooltip = tooltipHtml;
 
-                    const imgEl = card.querySelector("img");
-                    imgEl.onerror = () => { imgEl.src = EMPTY_IMAGE; };
-                    
-                    fragment.appendChild(card);
-                }
-                
-                const bottomOffset = totalHeight - (endRow * rowHeight);
-                if (bottomOffset > 0) {
-                    const bottomSpacer = document.createElement('div');
-                    bottomSpacer.className = 'styleselector-spacer';
-                    bottomSpacer.style.height = `${bottomOffset}px`;
-                    bottomSpacer.style.gridColumn = '1 / -1';
-                    fragment.appendChild(bottomSpacer);
-                }
-                
-                els.viewport.innerHTML = '';
-                els.viewport.appendChild(fragment);
-            };
+				card.innerHTML = `
+					<div class="styleselector-media-container" style="height: ${imageHeight}px;">
+						<img src="${img.preview_url || EMPTY_IMAGE}" loading="lazy" decoding="async" alt="${escapedDisplayName}">
+					</div>
+					<div class="styleselector-image-card-info">
+						<p>${escapedDisplayName}</p>
+					</div>
+				`;
+
+				const imgEl = card.querySelector("img");
+				imgEl.onerror = () => { imgEl.src = EMPTY_IMAGE; };
+
+				return card;
+			};
+
+			const renderVisibleCards = () => {
+				if (!els.viewport || !els.gallery) return;
+
+				const filteredImages = getFilteredImages();
+				const totalImages = filteredImages.length;
+
+				if (totalImages === 0) {
+					els.viewport.innerHTML = '<div class="styleselector-no-images">📂 No styles found<br><small>Add images to the styles folder</small></div>';
+					els.viewport.style.height = 'auto';
+					return;
+				}
+
+				calculateGridMetrics();
+
+				// If there are few images (for example, < 300) – render everything without virtualization
+				const USE_VIRTUALIZATION = totalImages >= 300; // можно уменьшить порог до 200, если нужно
+
+				if (!USE_VIRTUALIZATION) {
+					// Simple rendering of all cards
+					const imageHeight = Math.round(state.previewSize * 0.9);
+					const fragment = document.createDocumentFragment();
+
+					for (let i = 0; i < totalImages; i++) {
+						const img = filteredImages[i];
+						const card = createCardElement(img, imageHeight);
+						fragment.appendChild(card);
+					}
+
+					els.viewport.innerHTML = '';
+					els.viewport.appendChild(fragment);
+					// We save the “visible range” as all elements to avoid unnecessary redraws
+					state.visibleRange = { start: 0, end: totalImages };
+					return;
+				}
+
+				// --- Below is virtualization for large databases (more than 300 elements) ---
+				const rowHeight = state.cardHeight + 8;
+				const totalRows = Math.ceil(totalImages / state.columnsCount);
+				const totalHeight = totalRows * rowHeight;
+
+				const scrollTop = els.gallery.scrollTop;
+				const viewportHeight = els.gallery.clientHeight;
+
+				const buffer = 5; // increased the buffer for better UX
+				const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+				const endRow = Math.min(totalRows, Math.ceil((scrollTop + viewportHeight) / rowHeight) + buffer);
+
+				const startIndex = startRow * state.columnsCount;
+				const endIndex = Math.min(totalImages, endRow * state.columnsCount);
+
+				if (state.visibleRange.start === startIndex && state.visibleRange.end === endIndex) {
+					return;
+				}
+
+				state.visibleRange = { start: startIndex, end: endIndex };
+
+				const topOffset = startRow * rowHeight;
+				const fragment = document.createDocumentFragment();
+
+				const topSpacer = document.createElement('div');
+				topSpacer.className = 'styleselector-spacer';
+				topSpacer.style.height = `${topOffset}px`;
+				topSpacer.style.gridColumn = '1 / -1';
+				fragment.appendChild(topSpacer);
+
+				const imageHeight = Math.round(state.previewSize * 0.9);
+
+				for (let i = startIndex; i < endIndex; i++) {
+					const img = filteredImages[i];
+					const card = createCardElement(img, imageHeight);
+					fragment.appendChild(card);
+				}
+
+				const bottomOffset = totalHeight - (endRow * rowHeight);
+				if (bottomOffset > 0) {
+					const bottomSpacer = document.createElement('div');
+					bottomSpacer.className = 'styleselector-spacer';
+					bottomSpacer.style.height = `${bottomOffset}px`;
+					bottomSpacer.style.gridColumn = '1 / -1';
+					fragment.appendChild(bottomSpacer);
+				}
+
+				els.viewport.innerHTML = '';
+				els.viewport.appendChild(fragment);
+			};
+			
 
             // === Tooltip event handlers ===
             els.viewport.addEventListener("mouseenter", (e) => {

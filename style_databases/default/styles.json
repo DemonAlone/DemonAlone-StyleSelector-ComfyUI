@@ -641,8 +641,8 @@
     },
     {
     "name": "Grunge",
-    "positive": "sporting a grunge look, '90s influence, flannel, band tees, distressed",
-    "negative_prompt": "preppy, glamorous, feminine, tailored"
+    "positive": "grunge aesthetic, dirty textured surfaces, raw distressed materials, oversaturated shadows, gritty urban decay, rough handmade visual noise",
+    "negative_prompt": ""
     },
     {
     "name": "Glamorous",
@@ -699,6 +699,11 @@
     "positive": "fragmented, kaleidoscopic, geometric, prism-like, refracting, rainbow, color palette, shattered",
     "negative_prompt": ""
     },
+	{
+	"name": "2000s-Cel-Digital-Hybrid",
+	"positive": "early-2000s anime hybrid cel/digital look, bright saturated colors, clean digital gradients, crisp character silhouettes",
+	"negative_prompt": ""
+	},
 	{
     "name": "realistic supressor",
     "positive": "",

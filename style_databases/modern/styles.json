@@ -58,5 +58,25 @@
 	"name": "Underwater Photography",
     "positive": "underwater photography, aquatic scene, marine life, submerged beauty.",
     "negative_prompt": ""
+    },
+	{
+	"name": "Retro-VHS-Anime",
+    "positive": "retro VHS anime aesthetic, soft analog blur, muted colors, chromatic bleeding, scanlines, tape noise artifacts",
+    "negative_prompt": ""
+    },
+	{
+	"name": "SciFi-Hard-Surface",
+    "positive": "sleek hard-surface sci-fi illustration, advanced materials, polished metallic detailing, industrial futuristic design",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Solarpunk",
+    "positive": "bright solarpunk utopia, organic architecture, lush greenery integrated with technology, sunlit renewable energy systems, harmonious eco-design, soft optimistic tones",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Post-Apocalyptic",
+    "positive": "post-apocalyptic wasteland aesthetic, ruined structures, scavenged gear, desolate landscapes, dusty muted colors, broken machinery, survival-worn textures, bleak atmospheric haze",
+    "negative_prompt": ""
     }
 ]	

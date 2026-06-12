@@ -696,7 +696,7 @@ const DA_StyleSelectorNode = {
 				calculateGridMetrics();
 
 				// If there are few images (for example, < 300) – render everything without virtualization
-				const USE_VIRTUALIZATION = totalImages >= 300; // можно уменьшить порог до 200, если нужно
+				const USE_VIRTUALIZATION = totalImages >= 300;
 
 				if (!USE_VIRTUALIZATION) {
 					// Simple rendering of all cards

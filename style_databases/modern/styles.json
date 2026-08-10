@@ -41,7 +41,7 @@
 	},
 	{
     "name": "Propaganda poster",
-    "positive": "Propaganda poster. Eye-catching layout, symbolic imagery, bold text, dramatic patriotic message",
+    "positive": "propaganda poster. Eye-catching layout, symbolic imagery, bold text, dramatic patriotic message",
     "negative_prompt": ""
     },
 	{
@@ -77,6 +77,11 @@
 	{
 	"name": "Post-Apocalyptic",
     "positive": "post-apocalyptic wasteland aesthetic, ruined structures, scavenged gear, desolate landscapes, dusty muted colors, broken machinery, survival-worn textures, bleak atmospheric haze",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Whimsical Fantasy",
+    "positive": "whimsical fantasy, soft pastel colors",
     "negative_prompt": ""
     }
 ]	

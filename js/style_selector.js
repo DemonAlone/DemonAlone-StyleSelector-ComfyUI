@@ -66,73 +66,6 @@ function simpleMarkdownToHtml(md) {
     return processed;
 }
 
-// --- Help text for Style Selector (Markdown) ---
-const HELP_MARKDOWN = `
-## 🛠 How to Add Your Own Style
-
-To use custom styles or databases, follow this new directory structure and configuration method:
-
-### 1. Create Base Directory
-Create a folder named after your database (e.g., "MyStyleBase") inside the "style_databases" folder in your ComfyUI user directory ("ComfyUI/custom_nodes/DemonAlone-StyleSelector-ComfyUI/...".
-
-**Path Structure:**
-\`\`\`
-style_databases/
-└── [YourBaseName]/
-    ├── styles.json
-    └── previews/
-        ├── style_name_1.jpg
-        └── style_name_2.png
-\`\`\`
-### 2. Edit styles.json
-The styles.json file must be placed directly inside your specific base folder. Add a record using the following JSON structure:
-
-{
-    "name": "The name of your style",
-    "positive": "A positive for the style",
-    "negative_prompt": "Negative for this style"
-}
-
-### 3. Add Preview Images
-Images must be stored inside the previews subfolder of your base directory.
-
-Supported formats: .png, .jpg, .jpeg, .webp
-Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. Format JPG is recommended.
-Naming: The image filename must match the name field in "styles.json" exactly (case-sensitive). For example: "Cyberpunk.jpg".
-
-## ⚠️ File Naming Constraints
-To ensure compatibility across all operating systems (Windows, macOS, Linux), please adhere to the following rules when naming styles and preview images:
-
-*   **Allowed Characters:** Use only standard alphanumeric characters ("a-z", "A-Z", "0-9") and basic symbols like underscores ("_") or hyphens ("-").
-*   **Forbidden Symbols:** Avoid special characters such as forward slashes ("/"), backslashes ("\"), colons (":"), asterisks ("*"), question marks ("?"), and quotation marks. These may cause errors depending on your file system.
-*   **Matching Names:** Ensure that the "name" field in "styles.json" exactly matches the preview image filename (case-sensitive).
-
-### Recommended Naming Format:
-**Example:** "Cyberpunk_Street.jpg" or "Cyberpunk-Street.png"
-**Avoid:** "Cyberpunk/Street.jpg" or "Cyberpunk:City.jpg"
-
-### 4. Load and Refresh Changes
-After editing styles.json or adding new images, you need to refresh the node:
-
-* Update List & Previews: Press the "Refresh style list" button inside the ComfyUI interface. This will update both the dropdown menu and the preview images instantly.
-* New Base (First Time): When creating a brand new base for the very first time, press "Refresh style list", then perform a full page reload (F5 or Ctrl+R) to ensure the new base appears in the ComfyUI dropdown menu.
-
-## ⚠️ Cleanup & Behavior Notes
-* Deleting Previews: If you delete an image from the previews folder, the style will remain in the node's "Selected" area. To remove it from the selection list entirely, you must press the "Clear selected style" button.
-* Multiple Databases: You cannot use styles from different base folders simultaneously within a single node instance.
-* Workaround for Multiple Prompts: If you need to combine prompts from different bases, you can duplicate the node in your workflow and place them next to each other connected by a concat node to merge the final prompt.
-
-## 🚧 Troubleshooting
-If your image does not show a tooltip with prompts, or if you see an error message in the console:
-
-    DA_StyleSelector: Style "YOUR STYLE NAME" not found in styles.json
-* Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
-* Verify the JSON syntax is correct and valid.
-
-### Page Reload Behavior
-While simple refresh works for most updates, remember that the initial registration of a new database folder may require a browser reload after pressing "Refresh style list".
-`;
-
 // --- Global styles injection ---
 function ensureGlobalStyles() {
     if (document.getElementById('styleselector-gallery-styles')) return;
@@ -307,32 +240,6 @@ ensureGlobalStyles();
 
 const DA_StyleSelectorNode = {
     name: "DA_StyleSelector",
-    
-    _pendingStateUpdates: new Map(),
-    
-    async setUiState(nodeId, galleryId, state) {
-        const key = `${nodeId}-${galleryId}`;
-        
-        if (this._pendingStateUpdates.has(key)) {
-            clearTimeout(this._pendingStateUpdates.get(key).timeout);
-            state = { ...this._pendingStateUpdates.get(key).state, ...state };
-        }
-        
-        const timeout = setTimeout(async () => {
-            this._pendingStateUpdates.delete(key);
-            try {
-                await api.fetchApi("/styleselector/set_ui_state", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ node_id: nodeId, gallery_id: galleryId, state }),
-                });
-            } catch(e) {
-                console.error("DA_StyleSelector: Failed to set UI state", e);
-            }
-        }, 1000);
-        
-        this._pendingStateUpdates.set(key, { timeout, state });
-    },
 
     setup(nodeType) {
         if (nodeType.prototype._galleryInitialized) return;
@@ -399,6 +306,14 @@ const DA_StyleSelectorNode = {
             databaseWidget.serializeValue = () => node.properties.database;
             databaseWidget.draw = () => {};
             databaseWidget.computeSize = () => [0, 0];
+			
+			
+            // Hidden widget for ui_state
+            const uiStateWidget = this.addWidget("hidden_text", "ui_state",
+                this.properties.ui_state || "{}", () => {}, { multiline: true });
+            uiStateWidget.serializeValue = () => node.properties.ui_state || "{}";
+            uiStateWidget.draw = () => {};
+            uiStateWidget.computeSize = () => [0, 0];
             
             // Container creation
             const widgetContainer = document.createElement("div");
@@ -520,6 +435,35 @@ const DA_StyleSelectorNode = {
                 }
                 node.setProperty("database", state.selectedDatabase);
             };
+			
+            // Function to update ui_state widget and sync other widgets
+            const updateUiState = (updates) => {
+                let currentState = {};
+                try {
+                    const raw = uiStateWidget.value;
+                    if (raw) currentState = JSON.parse(raw);
+                } catch(e) {}
+                
+                Object.assign(currentState, updates);
+                const newJson = JSON.stringify(currentState);
+                uiStateWidget.value = newJson;
+                node.setProperty("ui_state", newJson);
+                
+                // Synchronize separate widgets for compatibility (though they may not be used directly)
+                if ('selected_image' in updates) {
+                    const selectedList = updates.selected_image || [];
+                    const strVal = selectedList.join(', ');
+                    node.setProperty("selected_image", strVal);
+                    if (selectionWidget) selectionWidget.value = strVal;
+                }
+                if ('selected_database' in updates) {
+                    const db = updates.selected_database || "";
+                    node.setProperty("database", db);
+                    if (databaseWidget) databaseWidget.value = db;
+                }
+                // trigger node update (optional)
+                // node.onNodeChange?.();
+            };
 
             const updateSelection = () => {
                 const widgetValue = state.selectedImages.join(', ');
@@ -552,11 +496,8 @@ const DA_StyleSelectorNode = {
                     card.classList.toggle('selected', state.selectedImages.includes(originalName));
                 });
 
-                DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
-                    selected_image: state.selectedImages,
-                    preview_size: state.previewSize,
-                    selected_database: state.selectedDatabase
-                });
+                // Save state to ui_state (only selected_image)
+                updateUiState({ selected_image: state.selectedImages });
             };
 
             const EMPTY_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjMjIyIi8+CjxwYXRoIGQ9Ik0zNSA2NUw0NSA1MEw1NSA2MEw2NSA0NUw3NSA2NUgzNVoiIGZpbGw9IiM0NDQiLz4KPGNpcmNsZSBjeD0iNjUiIGN5PSIzNSIgcj0iOCIgZmlsbD0iIzQ0NCIvPgo8L3N2Zz4=';
@@ -862,11 +803,8 @@ const DA_StyleSelectorNode = {
                 state.selectedImages = [];
                 updateSelection();
                 await fetchAndRender(false);
-                DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
-                    selected_database: state.selectedDatabase,
-                    selected_image: state.selectedImages,
-                    preview_size: state.previewSize
-                });
+                // Save database and cleared selection
+                updateUiState({ selected_database: state.selectedDatabase, selected_image: state.selectedImages });
             });
 
             // Clear selected styles button
@@ -881,13 +819,11 @@ const DA_StyleSelectorNode = {
             els.sizeSlider.addEventListener("input", (e) => {
                 const size = parseInt(e.target.value, 10);
                 updatePreviewSize(size);
+				// Save preview_size
                 
                 clearTimeout(sizeSliderTimeout);
                 sizeSliderTimeout = setTimeout(() => {
-                    DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
-                        preview_size: state.previewSize,
-                        selected_database: state.selectedDatabase
-                    });
+                    updateUiState({ preview_size: state.previewSize });
                 }, 500);
             });
 
@@ -897,10 +833,40 @@ const DA_StyleSelectorNode = {
             });
 
             // Help button: show help dialog with Markdown
-            els.helpBtn.addEventListener("click", () => {
-                const htmlContent = simpleMarkdownToHtml(HELP_MARKDOWN);
-                app.ui.dialog.show(htmlContent);
-            });
+			let cachedHelpHTML = null;
+
+			els.helpBtn.addEventListener("click", async () => {
+				// If already loaded, show it immediately
+				if (cachedHelpHTML) {
+					app.ui.dialog.show(cachedHelpHTML);
+					return;
+				}
+
+				try {
+					// Determine the path to the .md file relative to the current script
+					const scriptUrl = import.meta.url;
+					// Get the base directory (where style_selector.js is located)
+					const baseDir = scriptUrl.substring(0, scriptUrl.lastIndexOf('/') + 1);
+					// Formulate the path to the .md file (assuming it's located next to docs/)
+					const mdUrl = new URL('docs/DA_StyleSelector.md', baseDir).href;
+
+					const response = await fetch(mdUrl);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					const markdownText = await response.text();
+					// Convert Markdown to HTML
+					const htmlContent = simpleMarkdownToHtml(markdownText);
+					// Save to cache
+					cachedHelpHTML = htmlContent;
+					// Show the dialog
+					app.ui.dialog.show(htmlContent);
+				} catch (error) {
+					console.error('Failed to load help file:', error);
+					// Display an error message if loading failed
+					app.ui.dialog.show('<p>⚠️ Failed to load help. Check for the presence of the <code>DA_StyleSelector.md</code> file in the folder <code>js/docs/</code>.</p>');
+				}
+			});
 
             let scrollRAF = null;
             let lastScrollTime = 0;
@@ -961,7 +927,7 @@ const DA_StyleSelectorNode = {
                 // Load the list of databases
                 await fetchDatabases();
                 
-                // Load saved state
+                // Read initial state from ui_state widget
                 let initialState = { 
                     selected_image: [], 
                     preview_size: 110,
@@ -969,21 +935,15 @@ const DA_StyleSelectorNode = {
                 };
                 
                 try {
-                    const url = `/styleselector/get_ui_state?node_id=${node.id}&gallery_id=${node.properties.image_gallery_unique_id}`;
-                    const res = await api.fetchApi(url);
-                    const loadedState = await res.json();
-                    
-                    let loadedSelected = loadedState.selected_image || [];
-                    if (!Array.isArray(loadedSelected)) {
-                        loadedSelected = loadedSelected ? [loadedSelected] : [];
+                    const rawState = uiStateWidget.value;
+                    if (rawState) {
+                        const parsed = JSON.parse(rawState);
+                        if (parsed.selected_image) initialState.selected_image = parsed.selected_image;
+                        if (parsed.preview_size) initialState.preview_size = parsed.preview_size;
+                        if (parsed.selected_database) initialState.selected_database = parsed.selected_database;
                     }
-                    initialState = { 
-                        selected_image: loadedSelected, 
-                        preview_size: loadedState.preview_size || 110,
-                        selected_database: loadedState.selected_database || initialState.selected_database
-                    };
-                } catch(e) { 
-                    console.error("[Gallery Debug] Failed to get initial UI state:", e); 
+                } catch(e) {
+                    console.warn("Failed to parse ui_state:", e);
                 }
 
                 // Apply the database if it exists in the available list, otherwise take the first one
@@ -1004,8 +964,9 @@ const DA_StyleSelectorNode = {
 
                 state.selectedImages = initialState.selected_image.filter(name => name && typeof name === 'string');
                 
-                const existingSelectedImage = node.properties?.selected_image || "";
-                if (existingSelectedImage && state.selectedImages.length === 0) {
+                // fallback: if we have selected_image in properties but not in ui_state (for compatibility)
+                if (state.selectedImages.length === 0 && node.properties.selected_image) {
+                    const existingSelectedImage = node.properties.selected_image || "";
                     const namesFromProp = existingSelectedImage.split(',').map(s => s.trim()).filter(s => s);
                     if (namesFromProp.length > 0) {
                         const matched = state.availableImages.filter(img => {
@@ -1014,6 +975,8 @@ const DA_StyleSelectorNode = {
                         }).map(img => img.original_name);
                         if (matched.length > 0) {
                             state.selectedImages = matched;
+							// Save to ui_state
+                            updateUiState({ selected_image: state.selectedImages });
                         }
                     }
                 }
@@ -1041,8 +1004,9 @@ const DA_StyleSelectorNode = {
                     }
                 }
                 
-                DA_StyleSelectorNode.setUiState(node.id, node.properties.image_gallery_unique_id, { 
-                    selected_database: state.selectedDatabase,
+                // Initial save of full state (ensure consistency)
+                updateUiState({
+					selected_database: state.selectedDatabase,
                     selected_image: state.selectedImages,
                     preview_size: state.previewSize
                 });
@@ -1070,6 +1034,7 @@ const DA_StyleSelectorNode = {
                 fitHeight();
             });
 
+            return result;
         };
     }
 };

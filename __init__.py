@@ -6,7 +6,6 @@ from PIL import Image
 import server
 
 IMAGE_EXTENSIONS = frozenset(['.png', '.jpg', '.jpeg', '.webp'])
-UI_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "styleselector_ui_state.json")
 
 # === CONFIGURATION ===
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -195,93 +194,6 @@ async def get_preview_image(request):
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
-@server.PromptServer.instance.routes.post("/styleselector/set_ui_state")
-async def set_ui_state(request):
-    try:
-        data = await request.json()
-        node_id = str(data.get("node_id"))
-        gallery_id = data.get("gallery_id")
-        state = data.get("state", {})
-
-        if not gallery_id:
-            return web.Response(status=400)
-
-        node_key = f"{gallery_id}_{node_id}"
-
-        ui_states = {}
-        if os.path.exists(UI_STATE_FILE):
-            try:
-                with open(UI_STATE_FILE, 'r', encoding='utf-8') as f:
-                    ui_states = json.load(f)
-            except Exception as e:
-                print(f"DA_StyleSelector: Error reading UI state file: {e}")
-
-        if not isinstance(state.get('selected_image'), list):
-            state['selected_image'] = [state['selected_image']] if state.get('selected_image') else []
-
-        if node_key not in ui_states:
-            ui_states[node_key] = {}
-        ui_states[node_key].update({k: v for k, v in state.items() if k != "selected_image"})
-        selected_images = state.get('selected_image', [])
-        if isinstance(selected_images, str):
-            selected_images = [selected_images]
-        ui_states[node_key]['selected_image'] = selected_images
-
-        # Also save selected database
-        if 'selected_database' in state:
-            ui_states[node_key]['selected_database'] = state['selected_database']
-
-        try:
-            with open(UI_STATE_FILE, 'w', encoding='utf-8') as f:
-                json.dump(ui_states, f, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(f"DA_StyleSelector: Error writing UI state file: {e}")
-            return web.json_response({"status": "error", "message": "Failed to save state"}, status=500)
-
-        return web.json_response({"status": "ok"})
-    except Exception as e:
-        print(f"DA_StyleSelector: Exception in set_ui_state: {e}")
-        return web.json_response({"status": "error", "message": str(e)}, status=500)
-
-@server.PromptServer.instance.routes.get("/styleselector/get_ui_state")
-async def get_ui_state(request):
-    try:
-        node_id = request.query.get('node_id')
-        gallery_id = request.query.get('gallery_id')
-
-        if not node_id or not gallery_id:
-            return web.json_response({"error": "node_id or gallery_id is required"}, status=400)
-
-        node_key = f"{gallery_id}_{node_id}"
-
-        if os.path.exists(UI_STATE_FILE):
-            with open(UI_STATE_FILE, 'r', encoding='utf-8') as f:
-                ui_states = json.load(f)
-        else:
-            return web.json_response({"selected_image": [], "sort_order": "name", "preview_size": 110, "selected_database": ""})
-
-        node_state = ui_states.get(node_key, {})
-        raw_selected = node_state.get("selected_image", "")
-        if not isinstance(raw_selected, list):
-            if raw_selected and isinstance(raw_selected, str) and raw_selected.strip():
-                selected_list = [raw_selected]
-            else:
-                selected_list = []
-        else:
-            selected_list = raw_selected
-
-        state_obj = {
-            "selected_image": selected_list,
-            "sort_order": node_state.get("sort_order", "name"),
-            "preview_size": node_state.get("preview_size", 110),
-            "selected_database": node_state.get("selected_database", "")
-        }
-
-        return web.json_response(state_obj)
-    except Exception as e:
-        return web.json_response({"status": "error", "message": str(e)}, status=500)
-
-
 class DA_StyleSelector:
     @classmethod
     def INPUT_TYPES(cls):
@@ -295,6 +207,7 @@ class DA_StyleSelector:
                 "unique_id": "UNIQUE_ID",
                 "selected_image": ("STRING", {"default": ""}),
                 "database": ("STRING", {"default": ""}),
+                "ui_state": ("STRING", {"default": "{}", "multiline": True}), 
             }
         }
 
@@ -304,10 +217,8 @@ class DA_StyleSelector:
     CATEGORY = "Style selector"
 
     @classmethod
-    @classmethod
-    def IS_CHANGED(cls, selected_image="", database="", **kwargs):
+    def IS_CHANGED(cls, selected_image="", database="", ui_state="{}", **kwargs):
         # Base part: database and selected image
-        base = f"{database}_{selected_image}"
         # Add mtime of styles file to respond to content changes
         mtime = ""
         if database:
@@ -317,10 +228,10 @@ class DA_StyleSelector:
                     mtime = str(os.path.getmtime(json_path))
                 except OSError:
                     pass
-        return f"{base}_{mtime}"
+        return f"{ui_state}_{mtime}"
         
     @classmethod
-    def VALIDATE_INPUTS(cls, selected_image="", database="", **kwargs):
+    def VALIDATE_INPUTS(cls, selected_image="", database="", ui_state="{}", **kwargs):
         if not selected_image:
             return True
         # Check that database exists, otherwise warning
@@ -344,11 +255,26 @@ class DA_StyleSelector:
                 return f"Image not found: {img}"
         return True
 
-    def load_style(self, unique_id, selected_image="", positive="", negative="", database="", **kwargs):
+    def load_style(self, unique_id, selected_image="", positive="", negative="", database="", ui_state="{}", **kwargs):
         positive = positive or ""
         negative = negative or ""
 
-        # If database not specified, try to use first available one
+        # parse ui_state and override the selected images and database
+        try:
+            state = json.loads(ui_state) if ui_state else {}
+        except:
+            state = {}
+
+        if state:
+            if "selected_image" in state and state["selected_image"]:
+                # If this is a list, turn it into a string separated by commas
+                if isinstance(state["selected_image"], list):
+                    selected_image = ", ".join(state["selected_image"])
+                else:
+                    selected_image = str(state["selected_image"])
+            if "selected_database" in state and state["selected_database"]:
+                database = state["selected_database"]
+                
         available = get_available_databases()
         if not database and available:
             database = available[0]

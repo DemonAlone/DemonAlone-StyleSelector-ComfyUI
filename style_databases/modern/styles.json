@@ -56,7 +56,7 @@
     },
 	{
 	"name": "Underwater Photography",
-    "positive": "underwater photography, aquatic scene, marine life, submerged beauty.",
+    "positive": "underwater photography, aquatic scene, marine life, submerged beauty",
     "negative_prompt": ""
     },
 	{
@@ -82,6 +82,36 @@
 	{
 	"name": "Whimsical Fantasy",
     "positive": "whimsical fantasy, soft pastel colors",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Collage Magazine cover",
+    "positive": "magazine cover, cut-and-paste collage, photocopy grain, glitch typography, sticker overlays, scribbled notes, neon purple and acid green accents, gritty DIY magazine layout",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Watercolor storybook illustration",
+    "positive": "storybook watercolor illustration, soft pencil outlines, light cel shading, pastel palette, subtle cold-press paper texture, soft diffused daylight",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Colored pencil illustration",
+    "positive": "colored pencil illustration, visible pencil texture, gentle shading",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Lineless storybook illustration",
+    "positive": "lineless storybook illustration, soft edges, painterly shading",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Embroidery illustration",
+    "positive": "embroidery illustration, thread texture, stitched lines",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Holographic foil sticker",
+    "positive": "holographic foil sticker, reflective sheen, rainbow highlights",
     "negative_prompt": ""
     }
 ]	

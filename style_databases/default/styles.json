@@ -705,6 +705,16 @@
 	"negative_prompt": ""
 	},
 	{
+    "name": "Impasto expressionist",
+    "positive": "impasto expressionist, thick oil paint, palette-knife ridges, visible canvas texture, dramatic color contrasts, emotionally charged brushwork, painterly realism",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Sticker book Illustration",
+    "positive": "sticker book illustration, thick outline, flat colors, white border",
+    "negative_prompt": ""
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

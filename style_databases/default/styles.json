@@ -715,6 +715,11 @@
     "negative_prompt": ""
     },
 	{
+    "name": "Charcoal Illustration",
+    "positive": "charcoal drawing, smudged shadows, gritty texture",
+    "negative_prompt": "colorful"
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

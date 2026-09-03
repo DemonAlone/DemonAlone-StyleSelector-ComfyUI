@@ -319,7 +319,7 @@ const DA_StyleSelectorNode = {
             const widgetContainer = document.createElement("div");
             widgetContainer.className = "styleselector-container-wrapper";
             widgetContainer.dataset.captureWheel = "true";
-            widgetContainer.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+			widgetContainer.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true, capture: true });
 
             this.addDOMWidget("gallery", "div", widgetContainer, {});
 
@@ -362,8 +362,19 @@ const DA_StyleSelectorNode = {
             els.root = widgetContainer.querySelector(`#${uniqueId}`);
             els.container = widgetContainer;
             els.mainContainer = widgetContainer.querySelector(".styleselector-container");
-            els.gallery = widgetContainer.querySelector(".styleselector-gallery");
-            els.viewport = widgetContainer.querySelector(".styleselector-gallery-viewport");
+			els.gallery = widgetContainer.querySelector(".styleselector-gallery");
+
+			//=== Global wheel interception to prevent canvas scrolling in Nodes 2.0 ===
+			const wheelHandler = (e) => {
+				const target = e.target;
+				if (target && els.gallery && els.gallery.contains(target)) {
+					e.stopPropagation();
+				}
+			};
+			document.addEventListener('wheel', wheelHandler, { passive: true, capture: true });
+			this._wheelHandler = wheelHandler;
+
+			els.viewport = widgetContainer.querySelector(".styleselector-gallery-viewport");
             els.searchInput = widgetContainer.querySelector(".search-input");
             els.selectedName = widgetContainer.querySelector(".selected-name");
             els.refreshBtn = widgetContainer.querySelector(".refresh-btn");
@@ -1012,22 +1023,27 @@ const DA_StyleSelectorNode = {
                 });
             };
 
-            const originalOnRemoved = this.onRemoved;
-            this.onRemoved = function() {
-                if (scrollRAF) cancelAnimationFrame(scrollRAF);
-                if (resizeRAF) cancelAnimationFrame(resizeRAF);
-                clearTimeout(searchTimeout);
-                
-                // Remove the body tooltip
-                if (els.globalTooltip) {
-                    els.globalTooltip.remove();
-                }
-                
-                state.elements = {};
-                state.availableImages = [];
-                
-                if (originalOnRemoved) originalOnRemoved.apply(this, arguments);
-            };
+			const originalOnRemoved = this.onRemoved;
+			this.onRemoved = function() {
+				if (scrollRAF) cancelAnimationFrame(scrollRAF);
+				if (resizeRAF) cancelAnimationFrame(resizeRAF);
+				clearTimeout(searchTimeout);
+				
+				if (els.globalTooltip) {
+					els.globalTooltip.remove();
+				}
+				
+				// Removing the global wheel handler
+				if (this._wheelHandler) {
+					document.removeEventListener('wheel', this._wheelHandler, { capture: true });
+					this._wheelHandler = null;
+				}
+				
+				state.elements = {};
+				state.availableImages = [];
+				
+				if (originalOnRemoved) originalOnRemoved.apply(this, arguments);
+			};
 
             requestAnimationFrame(async () => {
                 await this.initializeNode();

@@ -91,4 +91,4 @@ Google Gemini / Gemma
 Qwen 3.5
 DeepSeek v3
 
-### 🖼️ The images for default were made on vanilla SDXL 1.0. The images for moder were made on vailla Kkein 9b and z-image turbo.
+### 🖼️ The images for default were made on vanilla SDXL 1.0. The images for modern were made on vanilla Klein 9b and z-image turbo.

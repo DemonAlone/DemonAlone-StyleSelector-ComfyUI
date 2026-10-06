@@ -113,5 +113,10 @@
 	"name": "Holographic foil sticker",
     "positive": "holographic foil sticker, reflective sheen, rainbow highlights",
     "negative_prompt": ""
+    },
+	{
+	"name": "Cross Hatching",
+    "positive": "cross hatching, overlapping parallel lines, ink shading, engraved tonal texture, fine linework",
+    "negative_prompt": "colorful"
     }
 ]	

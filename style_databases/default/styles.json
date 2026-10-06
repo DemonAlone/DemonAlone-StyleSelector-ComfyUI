@@ -720,6 +720,26 @@
     "negative_prompt": "colorful"
     },
 	{
+    "name": "Alebrijes",
+    "positive": "folk‑art sculpture, Alebrije, fantastical creature, vibrant clashing colours, intricate folk patterns",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Ambient Occlusion",
+    "positive": "ambient occlusion shading, soft contact shadows, realistic depth, 3D render, subtle volume",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Barcode Art",
+    "positive": "barcode artwork, rhythmic vertical bars, high‑contrast linework, machine graphic",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Chiaroscuro",
+    "positive": "chiaroscuro, dramatic light and shadow, deep contrast, moody atmosphere, sculpted volume",
+    "negative_prompt": ""
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

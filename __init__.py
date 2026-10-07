@@ -97,7 +97,6 @@ async def get_databases_endpoint(request):
     """Returns list of available style databases."""
     databases = get_available_databases()
     return web.json_response({"databases": databases})
-
 @server.PromptServer.instance.routes.get("/styleselector/get_images")
 async def get_images_endpoint(request):
     try:
@@ -107,58 +106,77 @@ async def get_images_endpoint(request):
         database = request.query.get('database', '')
         force_reload = request.query.get('force', 'false').lower() == 'true'
 
-        previews_dir, json_path = get_database_paths(database)
-        if not previews_dir:
+        available_dbs = get_available_databases()
+
+        # Correctly determine which databases to scan
+        if database == "__all__":
+            databases_to_scan = available_dbs
+        elif database in available_dbs:
+            databases_to_scan = [database]
+        else:
+            databases_to_scan = [available_dbs[0]] if available_dbs else []
+
+        if not databases_to_scan:
             return web.json_response({"images": [], "total_pages": 0, "current_page": 1, "source_folder": ""})
 
-        all_images, mtimes = _scan_input_directory(previews_dir)
-        all_images = sorted(all_images, key=lambda x: x.lower())
+        all_image_info_list = []
 
-        if search:
-            all_images = [img for img in all_images if search in img.lower()]
+        for db in databases_to_scan:
+            previews_dir, _ = get_database_paths(db)
+            if not previews_dir:
+                continue
+            
+            db_images, mtimes = _scan_input_directory(previews_dir)
+            styles_data = load_styles_json(db, force=force_reload)
 
-        total_images = len(all_images)
+            for img in db_images:
+                if search and search not in img.lower():
+                    continue
+
+                encoded_name = urllib.parse.quote(img, safe='')
+                width, height = 0, 0
+                try:
+                    full_path = os.path.join(previews_dir, img)
+                    with Image.open(full_path) as img_opened:
+                        width, height = img_opened.size
+                except Exception:
+                    pass
+
+                mtime = mtimes.get(img, 0)
+                style_name = os.path.splitext(img)[0]
+                style_info = styles_data.get(style_name, {})
+                style_positive = style_info.get("positive", "")
+                style_negative = style_info.get("negative", "")
+
+                # Important: make a unique original_name as 'db_name/img_name' to avoid collisions between databases in the common list
+                uniq_name = f"{db}/{img}"
+
+                all_image_info_list.append({
+                    "name": f"[{db}] {style_name}",
+                    "original_name": uniq_name,
+                    "preview_url": f"/styleselector/preview?filename={encoded_name}&database={db}&t={int(mtime)}",
+                    "source": previews_dir,
+                    "width": width,
+                    "height": height,
+                    "style_positive": style_positive,
+                    "style_negative": style_negative
+                })
+
+        # Sort the general merged list by style name
+        all_image_info_list = sorted(all_image_info_list, key=lambda x: x["name"].lower())
+
+        total_images = len(all_image_info_list)
         total_pages = max(1, (total_images + per_page - 1) // per_page)
         start_index = (page - 1) * per_page
         end_index = start_index + per_page
-        paginated_images = all_images[start_index:end_index]
-
-        styles_data = load_styles_json(database, force=force_reload)
-
-        image_info_list = []
-        for img in paginated_images:
-            encoded_name = urllib.parse.quote(img, safe='')
-            width, height = 0, 0
-            try:
-                full_path = os.path.join(previews_dir, img)
-                with Image.open(full_path) as img_opened:
-                    width, height = img_opened.size
-            except Exception:
-                pass
-
-            mtime = mtimes.get(img, 0)
-            style_name = os.path.splitext(img)[0]
-            style_info = styles_data.get(style_name, {})
-            style_positive = style_info.get("positive", "")
-            style_negative = style_info.get("negative", "")
-
-            image_info_list.append({
-                "name": img,
-                "original_name": img,
-                "preview_url": f"/styleselector/preview?filename={encoded_name}&database={database}&t={int(mtime)}",
-                "source": previews_dir,
-                "width": width,
-                "height": height,
-                "style_positive": style_positive,
-                "style_negative": style_negative
-            })
+        paginated_images = all_image_info_list[start_index:end_index]
 
         return web.json_response({
-            "images": image_info_list,
+            "images": paginated_images,
             "folders": [],
             "total_pages": total_pages,
             "current_page": page,
-            "source_folder": previews_dir
+            "source_folder": "All Databases" if database == "__all__" else database
         })
     except Exception as e:
         import traceback
@@ -221,7 +239,7 @@ class DA_StyleSelector:
         # Base part: database and selected image
         # Add mtime of styles file to respond to content changes
         mtime = ""
-        if database:
+        if database and database != "__all__":
             _, json_path = get_database_paths(database)
             if json_path and os.path.exists(json_path):
                 try:
@@ -236,23 +254,8 @@ class DA_StyleSelector:
             return True
         # Check that database exists, otherwise warning
         available = get_available_databases()
-        if database not in available:
+        if database != "__all__" and database not in available:
             return f"Database '{database}' not available"
-        previews_dir, _ = get_database_paths(database)
-        if not previews_dir:
-            return "Database previews folder missing"
-
-        if isinstance(selected_image, str):
-            images_list = [i.strip() for i in selected_image.split(',') if i.strip()]
-        else:
-            images_list = selected_image
-
-        for img in images_list:
-            image_path = os.path.normpath(os.path.join(previews_dir, img))
-            if not image_path.startswith(os.path.normpath(previews_dir)):
-                return f"Invalid image path: {img}"
-            if not os.path.exists(image_path):
-                return f"Image not found: {img}"
         return True
 
     def load_style(self, unique_id, selected_image="", positive="", negative="", database="", ui_state="{}", **kwargs):
@@ -274,21 +277,10 @@ class DA_StyleSelector:
                     selected_image = str(state["selected_image"])
             if "selected_database" in state and state["selected_database"]:
                 database = state["selected_database"]
-                
-        available = get_available_databases()
-        if not database and available:
-            database = available[0]
-        elif database not in available:
-            print(f"DA_StyleSelector: Database '{database}' not found, using first available.")
-            database = available[0] if available else ""
 
-        styles = load_styles_json(database)
         if not selected_image:
             return (positive, negative)
 
-        previews_dir, _ = get_database_paths(database)
-        if not previews_dir:
-            return (positive, negative)
 
         selection_list = []
         if isinstance(selected_image, str):
@@ -299,7 +291,23 @@ class DA_StyleSelector:
         positive_additions = []
         negative_additions = []
 
-        for img_name in selection_list:
+        for item in selection_list:
+            # Determine whether the element is saved in the new 'base/filename' format or the old 'filename' format (for backwards compatibility)
+            if "/" in item:
+                target_db, img_name = item.split("/", 1)
+            else:
+                target_db = database
+                img_name = item
+
+            available = get_available_databases()
+            if target_db == "all" or not target_db or target_db not in available:
+                if available:
+                    target_db = available[0]
+                else:
+                    continue
+
+            previews_dir, _ = get_database_paths(target_db)
+            styles = load_styles_json(target_db)
             full_path = os.path.normpath(os.path.join(previews_dir, img_name))
             if not full_path.startswith(os.path.normpath(previews_dir)):
                 continue
@@ -315,7 +323,7 @@ class DA_StyleSelector:
                 if style.get("negative"):
                     negative_additions.append(style["negative"])
             else:
-                print(f"DA_StyleSelector: Style '{style_name}' not found in styles.json of database '{database}'")
+                print(f"DA_StyleSelector: Style '{style_name}' not found in styles.json of database '{target_db}'")
 
         result_positive = positive
         result_negative = negative

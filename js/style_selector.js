@@ -93,7 +93,7 @@ function ensureGlobalStyles() {
         .styleselector-root .styleselector-controls { 
             display: flex; padding: 8px; gap: 8px; align-items: center; 
             flex-shrink: 0; background-color: #252525;
-            border-bottom: 1px solid #3a3a3a; flex-wrap: wrap;
+            border-bottom: 1px solid #3a3a3a; flex-wrap: nowrap;
         }
         .styleselector-root .styleselector-controls input[type=text] { 
             flex-grow: 1; min-width: 100px; background: #333; color: #ccc; 
@@ -104,6 +104,8 @@ function ensureGlobalStyles() {
             background: #333; color: #ccc; border: 1px solid #555;
             padding: 12px 10px; border-radius: 4px; font-size: 15px;
             cursor: pointer;
+            max-width: 160px;
+            text-overflow: ellipsis;
         }
         .styleselector-root .styleselector-controls button {
             background: #444; color: #fff; border: none; border-radius: 4px;
@@ -258,7 +260,7 @@ const DA_StyleSelectorNode = {
                 selectedImages: [],
                 sortOrder: "name",
                 previewSize: 110,
-                selectedDatabase: "",
+                selectedDatabase: "all",
                 availableDatabases: [],
                 elements: {},
                 cachedHeights: { controls: 0, selectedDisplay: 0 },
@@ -274,18 +276,17 @@ const DA_StyleSelectorNode = {
             }
             
             const HEADER_HEIGHT = 80;
-            const MIN_NODE_WIDTH = 600;
+            const MIN_NODE_WIDTH = 640;
             const MIN_GALLERY_HEIGHT = 200;
 
-            this.size = [600, 480];
+            this.size = [640, 480];
 
             const node = this;
             const state = this._gallery;
 
             const originalConfigure = this.configure;
             this.configure = function(data) {
-                const result = originalConfigure?.apply(this, arguments);
-                return result;
+                return originalConfigure?.apply(this, arguments);
             };
 
             // Hidden widgets
@@ -420,14 +421,17 @@ const DA_StyleSelectorNode = {
                     console.error("DA_StyleSelector: Error fetching databases", e);
                     state.availableDatabases = [];
                 }
-                // Update dropdown list
+                
                 els.databaseSelect.innerHTML = "";
-                if (state.availableDatabases.length === 0) {
-                    const opt = document.createElement("option");
-                    opt.textContent = "No databases found";
-                    opt.disabled = true;
-                    els.databaseSelect.appendChild(opt);
-                } else {
+                
+				// 1. Always add the 'All databases' option first
+                const allOpt = document.createElement("option");
+                allOpt.value = "__all__";
+                allOpt.textContent = "✨ All Databases";
+                els.databaseSelect.appendChild(allOpt);
+
+				// 2. Correctly fill the list with individual databases from the backend
+                if (state.availableDatabases && state.availableDatabases.length > 0) {
                     state.availableDatabases.forEach(db => {
                         const opt = document.createElement("option");
                         opt.value = db;
@@ -435,15 +439,17 @@ const DA_StyleSelectorNode = {
                         els.databaseSelect.appendChild(opt);
                     });
                 }
-                // Set current database
-                if (state.selectedDatabase && state.availableDatabases.includes(state.selectedDatabase)) {
-                    els.databaseSelect.value = state.selectedDatabase;
-                } else if (state.availableDatabases.length > 0) {
-                    state.selectedDatabase = state.availableDatabases[0];
-                    els.databaseSelect.value = state.selectedDatabase;
-                } else {
-                    state.selectedDatabase = "";
-                }
+
+				 // Set current database
+				if (state.selectedDatabase === "__all__") {
+					els.databaseSelect.value = "__all__";
+				} else if (state.selectedDatabase && state.availableDatabases.includes(state.selectedDatabase)) {
+					els.databaseSelect.value = state.selectedDatabase;
+				} else {
+					state.selectedDatabase = "__all__";
+					els.databaseSelect.value = "__all__";
+				}
+
                 node.setProperty("database", state.selectedDatabase);
             };
 			
@@ -486,10 +492,10 @@ const DA_StyleSelectorNode = {
                 let displayText = "None";
                 if (state.selectedImages.length > 0) {
                     const baseNames = state.selectedImages.map(fullName => {
-                        const parts = fullName.split(/[\/\\]/);
-                        const filenameWithExt = parts[parts.length - 1];
-                        const extIndex = filenameWithExt.lastIndexOf('.');
-                        return extIndex > -1 ? filenameWithExt.slice(0, extIndex) : filenameWithExt;
+						// Extract only the file name, cutting off 'database_name/' if it exists
+                        const cleanName = fullName.includes('/') ? fullName.split('/')[1] : fullName;
+                        const extIndex = cleanName.lastIndexOf('.');
+                        return extIndex > -1 ? cleanName.slice(0, extIndex) : cleanName;
                     });
                     
                     const MAX_DISPLAY = 3;
@@ -810,11 +816,10 @@ const DA_StyleSelectorNode = {
                 if (newDb === state.selectedDatabase) return;
                 state.selectedDatabase = newDb;
                 node.setProperty("database", newDb);
-                // Reset selected images when changing database
-                state.selectedImages = [];
-                updateSelection();
+                
                 await fetchAndRender(false);
-                // Save database and cleared selection
+                updateSelection();
+                
                 updateUiState({ selected_database: state.selectedDatabase, selected_image: state.selectedImages });
             });
 
@@ -942,8 +947,8 @@ const DA_StyleSelectorNode = {
                 let initialState = { 
                     selected_image: [], 
                     preview_size: 110,
-                    selected_database: state.selectedDatabase || (state.availableDatabases[0] || "")
-                };
+					selected_database: "__all__" // Set 'All databases' as default for new nodes
+				};
                 
                 try {
                     const rawState = uiStateWidget.value;
@@ -957,13 +962,16 @@ const DA_StyleSelectorNode = {
                     console.warn("Failed to parse ui_state:", e);
                 }
 
-                // Apply the database if it exists in the available list, otherwise take the first one
-                if (initialState.selected_database && state.availableDatabases.includes(initialState.selected_database)) {
-                    state.selectedDatabase = initialState.selected_database;
-                } else if (state.availableDatabases.length > 0) {
-                    state.selectedDatabase = state.availableDatabases[0];
-                }
-                els.databaseSelect.value = state.selectedDatabase;
+				// Apply the database if it is "__all__" or exists in the available list
+				if (initialState.selected_database === "__all__") {
+					state.selectedDatabase = "__all__";
+				} else if (initialState.selected_database && state.availableDatabases.includes(initialState.selected_database)) {
+					state.selectedDatabase = initialState.selected_database;
+				} else {
+					state.selectedDatabase = "__all__";
+				}
+				els.databaseSelect.value = state.selectedDatabase;
+
                 node.setProperty("database", state.selectedDatabase);
 
                 state.previewSize = initialState.preview_size;

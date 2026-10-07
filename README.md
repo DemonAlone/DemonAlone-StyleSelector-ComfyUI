@@ -64,8 +64,6 @@ After editing styles.json or adding new images, you need to refresh the node:
 
 ## ⚠️ Cleanup & Behavior Notes
 * Deleting Previews: If you delete an image from the previews folder, the style will remain in the node's "Selected" area. To remove it from the selection list entirely, you must press the "Clear selected style" button.
-* Multiple Databases: You cannot use styles from different base folders simultaneously within a single node instance.
-* Workaround for Multiple Prompts: If you need to combine prompts from different bases, you can duplicate the node in your workflow and place them next to each other connected by a concat node to merge the final prompt.
 
 ## 🚧 Troubleshooting
 If your image does not show a tooltip with prompts, or if you see an error message in the console:

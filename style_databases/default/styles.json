@@ -740,6 +740,26 @@
     "negative_prompt": ""
     },
 	{
+    "name": "Geometric Abstraction",
+    "positive": "geometric abstraction, pure shapes, bold colour blocks, hard‑edged forms, non‑representational",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Infographic Illustration",
+    "positive": "infographic illustration, clean icons, data visualisation, flat shapes, clear visual hierarchy",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Isometric Drawing",
+    "positive": "isometric drawing, 30‑degree angled grid, parallel projection, clean 3D, miniature toy world",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Knolling",
+    "positive": "knolling, top‑down flat lay, objects at right angles, neat organised grid, studio lighting",
+    "negative_prompt": ""
+    },
+	{
     "name": "realistic supressor",
     "positive": "",
     "negative_prompt": "photo, cgi, 3d, render"

@@ -139,8 +139,8 @@ async def get_images_endpoint(request):
                     full_path = os.path.join(previews_dir, img)
                     with Image.open(full_path) as img_opened:
                         width, height = img_opened.size
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"DA_StyleSelector: Warning - Could not read dimensions for image '{img}': {e}")
 
                 mtime = mtimes.get(img, 0)
                 style_name = os.path.splitext(img)[0]
@@ -265,7 +265,11 @@ class DA_StyleSelector:
         # parse ui_state and override the selected images and database
         try:
             state = json.loads(ui_state) if ui_state else {}
-        except:
+        except json.JSONDecodeError:
+            print(f"DA_StyleSelector: Warning - Failed to parse ui_state JSON. Resetting to default.")
+            state = {}
+        except Exception as e:
+            print(f"DA_StyleSelector: Warning - Unexpected error parsing ui_state: {e}")
             state = {}
 
         if state:

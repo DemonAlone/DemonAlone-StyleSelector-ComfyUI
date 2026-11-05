@@ -2,7 +2,7 @@
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-<img width="580" height="459" alt="1" src="https://github.com/user-attachments/assets/2af8ee59-fb7f-4eda-a83e-074e81774035" />
+<img width="873" height="785" alt="1111" src="https://github.com/user-attachments/assets/bf36e901-d4b6-4363-bc4d-9bb06848b69d" />
 
 ## 📖 About
 
@@ -69,7 +69,7 @@ Removing Styles: To completely remove a style from the selection list, you must 
 
 ## 🚧 Troubleshooting
 If your image does not show up, or if you see an error message in the console:
-Check Console Logs: Look for [DA_StyleSelectorV2] messages in the ComfyUI terminal.
+Check Console Logs: Look for [DA_StyleSelector] messages in the ComfyUI terminal.
 Verify JSON Syntax: Ensure styles.json is valid JSON. A missing comma or bracket will prevent the entire database from loading.
 Case Sensitivity: Ensure capitalization matches exactly between styles.json name field and the image filename.
 Error example: DA_StyleSelector: Style 'YOUR STYLE NAME' not found in styles.json
@@ -84,12 +84,10 @@ While simple refresh works for most updates, remember that the initial registrat
 This extension is built upon existing open-source projects:
 
 Inspired by **Style Selector** node from [Easy-use](https://github.com/yolain/ComfyUI-Easy-Use) and **Image Gallery Loader** from [ComfyUi-ImageGalleryLoader](https://github.com/BigStationW/ComfyUi-ImageGalleryLoader).
-Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler). Few styles based on [EnragedAntelope's gallery](https://enragedantelope.github.io/Styles-FluxDev)/
+Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler). Few styles based on [EnragedAntelope's gallery](https://enragedantelope.github.io/Styles-FluxDev) and other sources.
 ## 🤖 AI Assistance
 This project was created with significant assistance from AI models:
 
-Google Gemini / Gemma
-Qwen 3.5
-DeepSeek v3
+**Google Gemini / Gemma**, **Qwen**, **DeepSeek**.
 
-### 🖼️ The images for default were made on vanilla SDXL 1.0. The images for modern were made on vanilla Klein 9b and z-image turbo.
+### 🖼️ The images for default were made on vanilla SDXL 1.0. The images for modern were made on vanilla Flux2 Klein 9b and z-image turbo.

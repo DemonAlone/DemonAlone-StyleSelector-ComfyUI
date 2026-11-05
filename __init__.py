@@ -65,31 +65,34 @@ async def api_get_styles(request):
                 style_name = item.get("name", "")
                 if not style_name:
                     continue
-                    
-                if search_query and search_query not in style_name.lower():
-                    continue
-                
-                # Find preview
-                preview_file = existing_previews.get(style_name.lower())
-                preview_url = ""
-                if preview_file:
-                    encoded_file = urllib.parse.quote(preview_file, safe='')
-                    preview_url = f"/styleselector/v2/preview?db={db}&file={encoded_file}"
-                
-                # Support tags directly from JSON (empty list if not present)
-                tags = item.get("tags", [])
-                if isinstance(tags, str):
-                    tags = [t.strip() for t in tags.split(",") if t.strip()]
 
-                master_list.append({
-                    "id": f"{db}/{style_name}",
-                    "db": db,
-                    "name": style_name,
-                    "display_name": f"[{db}] {style_name}" if target_db == "__all__" else style_name,
-                    "positive": item.get("positive", ""),
-                    "negative": item.get("negative_prompt", "") or item.get("negative", ""),
-                    "preview_url": preview_url,
-                    "tags": tags
+                encoded_name = urllib.parse.quote(img, safe='')
+                width, height = 0, 0
+                try:
+                    full_path = os.path.join(previews_dir, img)
+                    with Image.open(full_path) as img_opened:
+                        width, height = img_opened.size
+                except Exception as e:
+                    print(f"DA_StyleSelector: Warning - Could not read dimensions for image '{img}': {e}")
+
+                mtime = mtimes.get(img, 0)
+                style_name = os.path.splitext(img)[0]
+                style_info = styles_data.get(style_name, {})
+                style_positive = style_info.get("positive", "")
+                style_negative = style_info.get("negative", "")
+
+                # Important: make a unique original_name as 'db_name/img_name' to avoid collisions between databases in the common list
+                uniq_name = f"{db}/{img}"
+
+                all_image_info_list.append({
+                    "name": f"[{db}] {style_name}",
+                    "original_name": uniq_name,
+                    "preview_url": f"/styleselector/preview?filename={encoded_name}&database={db}&t={int(mtime)}",
+                    "source": previews_dir,
+                    "width": width,
+                    "height": height,
+                    "style_positive": style_positive,
+                    "style_negative": style_negative
                 })
                 
         # Sort styles by name
@@ -147,21 +150,27 @@ class DA_StyleSelector:
         positive = positive or ""
         negative = negative or ""
 
-        # Attempt 1: Use direct input selected_styles
-        current_selection_str = selected_styles
-        
-        # Attempt 2: If direct input is empty, try to extract from ui_state
-        if not current_selection_str and ui_state:
-            try:
-                state = json.loads(ui_state)
-                if "selected_styles" in state and isinstance(state["selected_styles"], list):
-                    current_selection_str = ", ".join(state["selected_styles"])
-                    print(f"[DA_StyleSelector DEBUG] Extracted from ui_state: '{current_selection_str}'")
-            except Exception as e:
-                print(f"[DA_StyleSelector DEBUG] Failed to parse ui_state: {e}")
+        # parse ui_state and override the selected images and database
+        try:
+            state = json.loads(ui_state) if ui_state else {}
+        except json.JSONDecodeError:
+            print(f"DA_StyleSelector: Warning - Failed to parse ui_state JSON. Resetting to default.")
+            state = {}
+        except Exception as e:
+            print(f"DA_StyleSelector: Warning - Unexpected error parsing ui_state: {e}")
+            state = {}
 
-        if not current_selection_str:
-            print("[DA_StyleSelector DEBUG] No styles selected, returning original prompts.")
+        if state:
+            if "selected_image" in state and state["selected_image"]:
+                # If this is a list, turn it into a string separated by commas
+                if isinstance(state["selected_image"], list):
+                    selected_image = ", ".join(state["selected_image"])
+                else:
+                    selected_image = str(state["selected_image"])
+            if "selected_database" in state and state["selected_database"]:
+                database = state["selected_database"]
+
+        if not selected_image:
             return (positive, negative)
 
         # Frontend sends IDs separated by comma: "default/Cyberpunk, model/Anime"

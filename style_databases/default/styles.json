@@ -645,11 +645,6 @@
     "negative_prompt": ""
     },
     {
-    "name": "Glamorous",
-    "positive": "  looking glamorous. Luxury, sequins, fur, red carpet ready",
-    "negative_prompt": "casual, relaxed, sporty, minimalist"
-    },
-    {
     "name": "Hipster",
     "positive": "hipster outfit, Eclectic, indie, non-mainstream, vintage",
     "negative_prompt": "mainstream, sporty, glamorous, preppy"
@@ -737,6 +732,26 @@
 	{
     "name": "Chiaroscuro",
     "positive": "chiaroscuro, dramatic light and shadow, deep contrast, moody atmosphere, sculpted volume",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Geometric Abstraction",
+    "positive": "geometric abstraction, pure shapes, bold colour blocks, hard‑edged forms, non‑representational",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Infographic Illustration",
+    "positive": "infographic illustration, clean icons, data visualisation, flat shapes, clear visual hierarchy",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Isometric Drawing",
+    "positive": "isometric drawing, 30‑degree angled grid, parallel projection, clean 3D, miniature toy world",
+    "negative_prompt": ""
+    },
+	{
+    "name": "Knolling",
+    "positive": "knolling, top‑down flat lay, objects at right angles, neat organised grid, studio lighting",
     "negative_prompt": ""
     },
 	{

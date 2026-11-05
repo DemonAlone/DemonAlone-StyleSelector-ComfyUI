@@ -118,5 +118,15 @@
 	"name": "Cross Hatching",
     "positive": "cross hatching, overlapping parallel lines, ink shading, engraved tonal texture, fine linework",
     "negative_prompt": "colorful"
+    },
+	{
+	"name": "Dark Synth",
+    "positive": "darksynth, neon glow, retro‑futuristic grid, dystopian night, magenta and cyan haze",
+    "negative_prompt": ""
+    },
+	{
+	"name": "Illuminated Manuscript",
+    "positive": "illuminated manuscript, gold leaf, ornate borders, miniature painting, medieval hand‑lettering",
+    "negative_prompt": ""
     }
 ]	

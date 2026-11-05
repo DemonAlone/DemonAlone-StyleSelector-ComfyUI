@@ -1,7 +1,8 @@
+
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-<img width="814" height="698" alt="1" src="https://github.com/user-attachments/assets/5920e239-2242-4abe-92c4-48f8276d7c8a" />
+<img width="580" height="459" alt="1" src="https://github.com/user-attachments/assets/2af8ee59-fb7f-4eda-a83e-074e81774035" />
 
 ## 📖 About
 
@@ -41,8 +42,8 @@ The styles.json file must be placed directly inside your specific base folder. A
 Images must be stored inside the previews subfolder of your base directory.
 
 Supported formats: .png, .jpg, .jpeg, .webp
-Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. Format JPG is recommended.
-Naming: The image filename must match the name field in `styles.json` exactly (case-sensitive). For example: `Cyberpunk.jpg`.
+Resolution: Dimensions and proportions do not matter. Suggested size: 256x256. JPG is recommended  for performance.
+Naming Rule (Strict): The image filename (without extension) must match the name field in `styles.json` exactly (case-sensitive). For example: `Cyberpunk.jpg`.
 
 ## ⚠️ File Naming Constraints
 To ensure compatibility across all operating systems (Windows, macOS, Linux), please adhere to the following rules when naming styles and preview images:
@@ -59,15 +60,19 @@ To ensure compatibility across all operating systems (Windows, macOS, Linux), pl
 ### 4. Load and Refresh Changes
 After editing styles.json or adding new images, you need to refresh the node:
 
-* Update List & Previews: Press the "Refresh style list" button inside the ComfyUI interface. This will update both the dropdown menu and the preview images instantly.
+* Update List & Previews: Press the "Refresh style list and previews" button inside the ComfyUI interface. This will update both the dropdown menu and the preview images instantly.
 * New Base (First Time): When creating a brand new base for the very first time, press "Refresh style list", then perform a full page reload (F5 or Ctrl+R) to ensure the new base appears in the ComfyUI dropdown menu.
 
 ## ⚠️ Cleanup & Behavior Notes
-* Deleting Previews: If you delete an image from the previews folder, the style will remain in the node's "Selected" area. To remove it from the selection list entirely, you must press the "Clear selected style" button.
+Deleting Previews: If you delete an image from the previews folder, the style will remain in the node's "Selected" area until you clear it. However, the preview image will disappear.
+Removing Styles: To completely remove a style from the selection list, you must delete its entry from styles.json and then press the "Refresh" button.
 
 ## 🚧 Troubleshooting
-If your image does not show a tooltip with prompts, or if you see an error message in the console:
-
+If your image does not show up, or if you see an error message in the console:
+Check Console Logs: Look for [DA_StyleSelectorV2] messages in the ComfyUI terminal.
+Verify JSON Syntax: Ensure styles.json is valid JSON. A missing comma or bracket will prevent the entire database from loading.
+Case Sensitivity: Ensure capitalization matches exactly between styles.json name field and the image filename.
+Error example: DA_StyleSelector: Style 'YOUR STYLE NAME' not found in styles.json
     DA_StyleSelector: Style 'YOUR STYLE NAME' not found in styles.json
 * Ensure capitalization matches exactly (e.g., Cyberpunk vs cyberpunk).
 * Verify the JSON syntax is correct and valid.
@@ -78,9 +83,7 @@ While simple refresh works for most updates, remember that the initial registrat
 ## 🏛 Credits & Acknowledgments
 This extension is built upon existing open-source projects:
 
-Image Gallery Loader logic based on [ComfyUi-ImageGalleryLoader](https://github.com/BigStationW/ComfyUi-ImageGalleryLoader).
-
-Easy-use Style Selector node inspired by the Insired [Easy-use](https://github.com/yolain/ComfyUI-Easy-Use) Style selector.
+Inspired by **Style Selector** node from [Easy-use](https://github.com/yolain/ComfyUI-Easy-Use) and **Image Gallery Loader** from [ComfyUi-ImageGalleryLoader](https://github.com/BigStationW/ComfyUi-ImageGalleryLoader).
 Base styles (styles.json) derived from sdxl_styles_sai.json and sdxl_styles_twri.json from [sdxl_prompt_styler](https://github.com/twri/sdxl_prompt_styler). Few styles based on [EnragedAntelope's gallery](https://enragedantelope.github.io/Styles-FluxDev)/
 ## 🤖 AI Assistance
 This project was created with significant assistance from AI models:

@@ -2,8 +2,9 @@
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
-<img width="873" height="785" alt="1111" src="https://github.com/user-attachments/assets/bf36e901-d4b6-4363-bc4d-9bb06848b69d" />
-
+<div align="center">
+  <img style="width: 100%; max-width: 854px; height: auto;" alt="2222" src="https://github.com/user-attachments/assets/9e51b6c0-d724-4843-8c6e-bb58fd3bb4ff" />
+</div>
 ## 📖 About
 
 This ComfyUI extension allows you to manage local style presets directly within the interface. It features a real-time preview, multi-select functionality, search capabilities, and integration with your local prompt base files.

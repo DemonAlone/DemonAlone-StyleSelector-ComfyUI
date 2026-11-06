@@ -85,9 +85,10 @@ function ensureGlobalStyles() {
             border-left: 4px solid #00FFC9; font-family: sans-serif;
         }
         .ss-v2-body-tooltip.visible { display: block; }
+		.ss-v2-body-tooltip .t-name { color: #FFA500; font-weight: bold; font-size: 14px; display: block; margin-bottom: 6px;border-bottom: 1px solid #333; padding-bottom: 4px; }
         .ss-v2-body-tooltip .t-pos { color: #00FFC9; font-weight: bold; }
         .ss-v2-body-tooltip .t-neg { color: #ff6b6b; font-weight: bold; }
-        .ss-v2-body-tooltip .t-txt { color: #ccc; display: block; margin-top: 2px; margin-bottom: 4px; }
+		.ss-v2-body-tooltip .t-txt { color: #ccc; display: block; margin-top: 2px; margin-bottom: 4px; white-space: pre-wrap; word-break: break-word; }
 		
 		/* Hover for style cards */
         .ss-card { transition: border-color 0.15s ease, filter 0.15s ease; }
@@ -187,7 +188,7 @@ const DA_StyleSelectorNode = {
         
         const searchInput = document.createElement("input");
         searchInput.type = "text";
-        searchInput.placeholder = "🔍 Search style or tag...";
+        searchInput.placeholder = "🔍 Search style or positive tag";
         searchInput.style.cssText = "flex-grow:1; background:#333; color:#fff; border:1px solid #555; padding:8px 10px; border-radius:4px; font-size:14px;";
 
         const clearBtn = document.createElement("button");
@@ -309,21 +310,26 @@ const DA_StyleSelectorNode = {
 			if (app.graph.setDirtyCanvas) app.graph.setDirtyCanvas(true, true);
 		};
 
-        const showTooltip = (card, style) => {
-
-            tooltipEl.innerHTML = `<span class="t-pos">Positive:</span><span class="t-txt">${escapeHtml(style.positive || 'None')}</span>`;
-            if (style.negative) {
-                tooltipEl.innerHTML += `<span class="t-neg">Negative:</span><span class="t-txt">${escapeHtml(style.negative)}</span>`;
-
-            }
-            tooltipEl.classList.add('visible');
-            const rect = card.getBoundingClientRect();
-            let left = rect.right + 8;
-            if (left + tooltipEl.offsetWidth > window.innerWidth) left = rect.left - tooltipEl.offsetWidth - 8;
-            let top = rect.top + rect.height/2 - tooltipEl.offsetHeight/2;
-            tooltipEl.style.left = `${Math.max(8, left)}px`;
-            tooltipEl.style.top = `${document.documentElement.scrollTop + Math.max(8, top)}px`;
-        };
+		const showTooltip = (card, style) => {
+			// Adding a style name with orange highlighting
+			tooltipEl.innerHTML = `<span class="t-name">${escapeHtml(style.name)}</span>`;
+			
+			// Positive промпт
+			tooltipEl.innerHTML += `<span class="t-pos">Positive:</span><span class="t-txt">${escapeHtml(style.positive || 'None')}</span>`;
+			
+			// Negative промпт (если есть)
+			if (style.negative) {
+				tooltipEl.innerHTML += `<span class="t-neg">Negative:</span><span class="t-txt">${escapeHtml(style.negative)}</span>`;
+			}
+			
+			tooltipEl.classList.add('visible');
+			const rect = card.getBoundingClientRect();
+			let left = rect.right + 8;
+			if (left + tooltipEl.offsetWidth > window.innerWidth) left = rect.left - tooltipEl.offsetWidth - 8;
+			let top = rect.top + rect.height/2 - tooltipEl.offsetHeight/2;
+			tooltipEl.style.left = `${Math.max(8, left)}px`;
+			tooltipEl.style.top = `${document.documentElement.scrollTop + Math.max(8, top)}px`;
+		};
 
         // Create style card
 		const createCard = (style) => {
@@ -380,7 +386,10 @@ const DA_StyleSelectorNode = {
             
             // Filtering and rendering in one loop (optimization)
             allStyles.forEach(style => {
-                const matchesSearch = style.name.toLowerCase().includes(filterText) || (style.tags && style.tags.some(t => t.toLowerCase().includes(filterText)));
+                const matchesSearch = 
+					style.name.toLowerCase().includes(filterText) || 
+					(style.tags && style.tags.some(t => t.toLowerCase().includes(filterText))) ||
+					(style.positive && style.positive.toLowerCase().includes(filterText));
                 const matchesTag = !activeTag || (style.tags && style.tags.includes(activeTag));
                 
                 if (matchesSearch && matchesTag) {

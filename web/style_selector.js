@@ -228,7 +228,7 @@ const DA_StyleSelectorNode = {
 		galleryScroll.style.cssText = "flex: 1 1 0px; min-width: 0px; min-height: 0px; overflow-y:auto; overflow-x:hidden; padding:8px; background-color:#1a1a1a;";
 
 		const grid = document.createElement("div");
-		// SS Grid with auto-fill for automatic filling
+		// CSS Grid with auto-fill for automatic filling
 		grid.style.cssText = "display:grid; grid-template-columns:repeat(auto-fill, 128px); gap:8px; justify-content:center; align-content:start; width:100%;";
 		galleryScroll.appendChild(grid);
 		container.appendChild(galleryScroll);

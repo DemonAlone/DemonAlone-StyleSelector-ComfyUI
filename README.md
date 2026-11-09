@@ -1,9 +1,8 @@
-
 # DemonAlone-StyleSelector-ComfyUI
 
 > 🎨 **Prompt Style Selector** with Preview, Multiple Selecting, Search and Local Base for ComfyUI.
 <div align="center">
-  <img style="width: 100%; max-width: 854px; height: auto;" alt="2222" src="https://github.com/user-attachments/assets/9e51b6c0-d724-4843-8c6e-bb58fd3bb4ff" />
+  <img style="width: 100%; max-width: 811px; height: auto;" alt="555" src="https://github.com/user-attachments/assets/d17ee320-ea9e-4b5b-a8aa-917a1c110636" />
 </div>
 ## 📖 About
 

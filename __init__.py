@@ -4,6 +4,7 @@ import urllib.parse
 from aiohttp import web
 from PIL import Image
 import server
+import hashlib
 
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.webp')
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -137,8 +138,10 @@ class DA_StyleSelector:
     CATEGORY = "Style Selector"
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        return float("nan")
+    def IS_CHANGED(cls, selected_styles="", database="", ui_state="{}", positive="", negative="", **kwargs):
+        # Deterministic hash of what actually affects the output
+        key = f"{selected_styles}|{database}|{positive}|{negative}"
+        return hashlib.md5(key.encode("utf-8")).hexdigest()
 
     def apply_styles(self, selected_styles="", positive="", negative="", database="", ui_state="{}", **kwargs):
         # --- DEBUG: Print to ComfyUI console what actually came from JS ---

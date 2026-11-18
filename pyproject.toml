@@ -1,8 +1,11 @@
 [project]
 name = "demonalone-styleselector-comfyui"
 description = "Prompt Style Selector with Preview, Multiple Selecting, Search and Local Base for ComfyUI."
-version = "3.0.9"
-license = {file = "LICENSE"} 
+version = "3.2.0"
+license = {file = "LICENSE"}
+dependencies = [
+    "aiofiles"
+]
 # classifiers = [
 #     "Environment :: GPU :: NVIDIA CUDA",    # NVIDIA CUDA support
 # ]

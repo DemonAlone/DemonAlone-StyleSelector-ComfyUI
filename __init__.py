@@ -1,10 +1,11 @@
-import os
-import json
-import urllib.parse
-from aiohttp import web
-from PIL import Image
-import server
 import hashlib
+import json
+import os
+import urllib.parse
+
+import aiofiles
+import server
+from aiohttp import web
 
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.webp')
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,7 @@ def get_database_paths(database_name):
         return None, None
     if database_name not in available:
         database_name = available[0]
+
     db_path = os.path.join(STYLE_DATABASES_DIR, database_name)
     previews_dir = os.path.join(db_path, "previews")
     json_path = os.path.join(db_path, "styles.json")
@@ -49,7 +51,7 @@ async def api_get_styles(request):
             previews_dir, json_path = get_database_paths(db)
             if not json_path or not os.path.exists(json_path):
                 continue
-                
+
             # Collect existing preview files for fast checking
             existing_previews = {}
             if previews_dir and os.path.isdir(previews_dir):
@@ -58,9 +60,14 @@ async def api_get_styles(request):
                         name_without_ext = os.path.splitext(f.name)[0].lower()
                         existing_previews[name_without_ext] = f.name
 
-            with open(json_path, 'r', encoding='utf-8') as f:
-                try: data = json.load(f)
-                except: data = []
+            # ASYNC FIX: Using aiofiles instead of regular open
+            try:
+                async with aiofiles.open(json_path, 'r', encoding='utf-8') as f:
+                    content = await f.read()
+                    data = json.loads(content)
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"[StyleSelector] Error reading {json_path}: {e}")
+                data = []
 
             for item in data:
                 style_name = item.get("name", "")
@@ -94,19 +101,18 @@ async def api_get_styles(request):
                 })
                 
         # Sort styles by name
-        def _get_style_name_lower(style_item):
-            return style_item["name"].lower()
-
-        master_list.sort(key=_get_style_name_lower)
+        master_list.sort(key=lambda x: x["name"].lower())
         return web.json_response({"styles": master_list})
-        
-    except Exception as e:
+
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as e:
+        print(f"[StyleSelector] Critical error in get_styles: {e}")
         return web.json_response({"error": str(e)}, status=500)
 
 @server.PromptServer.instance.routes.get("/styleselector/v2/preview")
 async def api_get_preview(request):
     db = request.query.get('db', '')
     filename = request.query.get('file', '')
+
     if not db or not filename or ".." in filename or ".." in db:
         return web.Response(status=400)
         
@@ -160,8 +166,8 @@ class DA_StyleSelector:
                 if "selected_styles" in state and isinstance(state["selected_styles"], list):
                     current_selection_str = ", ".join(state["selected_styles"])
                     print(f"[DA_StyleSelector DEBUG] Extracted from ui_state: '{current_selection_str}'")
-            except Exception as e:
-                print(f"[DA_StyleSelector DEBUG] Failed to parse ui_state: {e}")
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                print(f"[DA_StyleSelector] Failed to parse ui_state: {e}")
 
         if not current_selection_str:
             print("[DA_StyleSelector DEBUG] No styles selected, returning original prompts.")
@@ -203,35 +209,29 @@ class DA_StyleSelector:
                         pos = style_item.get("positive", "")
                         neg = style_item.get("negative_prompt", "") or style_item.get("negative", "")
                         
-                        if pos:
-                            positive_additions.append(pos)
-                        if neg:
-                            negative_additions.append(neg)
+                        if pos: positive_additions.append(pos)
+                        if neg: negative_additions.append(neg)
                         found = True
                         break
                 
                 if not found:
                     print(f"[DA_StyleSelector WARNING] Style '{style_name}' not found in '{target_db}/styles.json'")
 
-            except Exception as e:
-                print(f"[DA_StyleSelector ERROR] Loading JSON for {target_db}: {e}")
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"[DA_StyleSelector] Error loading JSON for {target_db}: {e}")
 
         # Combine results
         result_positive = positive
+        result_positive = positive
         if positive_additions:
-            if result_positive:
-                result_positive += ", "
-            result_positive += ", ".join(positive_additions)
-
+            result_positive += (", " if result_positive else "") + ", ".join(positive_additions)
+            
         result_negative = negative
         if negative_additions:
-            if result_negative:
-                result_negative += ", "
-            result_negative += ", ".join(negative_additions)
-            print(f"[DA_StyleSelector SUCCESS] Final Positive: '{result_positive[:50]}...'")
+            result_negative += (", " if result_negative else "") + ", ".join(negative_additions)
+
         return (result_positive, result_negative)
 
-        
 
 NODE_CLASS_MAPPINGS = {"DA_StyleSelector": DA_StyleSelector}
 NODE_DISPLAY_NAME_MAPPINGS = {"DA_StyleSelector": "Style Selector V2"}
